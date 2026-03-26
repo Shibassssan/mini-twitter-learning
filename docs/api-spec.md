@@ -5,8 +5,8 @@
 - GraphQL単一エンドポイント: `POST /graphql`
 - 認証: jwt_sessions（Access Token + Refresh Token）
   - Access Token: メモリ（Zustand）に保持、短命（15-30分）
-  - Refresh Token: localStorageに保持、長命（2週間）
-  - トークン無効化: ログアウト時にRedisから削除
+  - Refresh Token: HttpOnly Cookieに保持、長命（2週間）
+  - トークン無効化: ログアウト時にRedisから削除 + Cookie破棄
   - セキュリティ: CSP（Content-Security-Policy）でXSS防止、dangerouslySetInnerHTML禁止
 - ページネーション: Relay Connection（カーソルベース、20件/ページ）
 - ID: 全てuuidを外部公開用IDとして使用（内部bigintは非公開）
@@ -39,9 +39,9 @@ type Tweet {
 
 type AuthPayload {
   accessToken: String!
-  refreshToken: String!
   user: User!
 }
+# refreshToken は HttpOnly Cookie でクライアントに送信される（レスポンスボディには含まない）
 
 # Relay Connection（カーソルページネーション）
 type TweetConnection {
@@ -80,7 +80,6 @@ enum TimelineScope {
 | Query | 引数 | 戻り値 | 認証 | 対応要件 |
 |-------|------|--------|------|----------|
 | `me` | なし | User | 必須 | ログイン中ユーザーの情報 |
-| `user` | uuid: ID! | User | 必須 | プロフィール表示 (US-19) |
 | `userByUsername` | username: String! | User | 必須 | URL `/:username` からのプロフィール表示 (US-19) |
 | `timeline` | first: Int, after: String | TweetConnection | 必須 | フォロータイムライン (US-8) |
 | `publicTimeline` | first: Int, after: String | TweetConnection | 必須 | 全体タイムライン (US-9) |
@@ -98,7 +97,7 @@ enum TimelineScope {
 | `signUp` | username: String!, email: String!, password: String!, displayName: String! | AuthPayload | 不要 | アカウント作成 (US-1) |
 | `signIn` | email: String!, password: String! | AuthPayload | 不要 | ログイン (US-2) |
 | `signOut` | なし | Boolean | 必須 | ログアウト (US-3) |
-| `refreshToken` | refreshToken: String! | AuthPayload | 不要 | トークン更新 (US-4) |
+| `refreshToken` | なし（HttpOnly Cookieで自動送信） | AuthPayload | 不要 | トークン更新 (US-4) |
 | `createTweet` | content: String! | Tweet | 必須 | ツイート投稿 (US-5) |
 | `deleteTweet` | uuid: ID! | Boolean | 必須 | ツイート削除 (US-6) |
 | `likeTweet` | tweetUuid: ID! | Tweet | 必須 | いいね (US-11) |
@@ -129,9 +128,9 @@ enum TimelineScope {
 1. サインアップ/サインイン
    Client → signUp/signIn mutation → Rails
    Rails → jwt_sessions でトークン生成 → Redis に保存
-   Rails → AuthPayload { accessToken, refreshToken, user } を返す
+   Rails → AuthPayload { accessToken, user } をレスポンスボディで返す
+        → refreshToken は Set-Cookie (HttpOnly, Secure, SameSite=Lax) でクライアントに送信
    Client → accessToken をメモリ（Zustand）に保持
-          → refreshToken を localStorage に保持
 
 2. 認証付きリクエスト
    Client → Authorization: Bearer <accessToken> → Rails
@@ -139,25 +138,51 @@ enum TimelineScope {
 
 3. トークン期限切れ
    Client → 401 を受信
-   Client → refreshToken mutation で新しい accessToken 取得
+   Client → refreshToken mutation（引数なし、Cookie が自動送信される）で新しい accessToken 取得
    Client → 元のリクエストをリトライ
 
 4. ログアウト
    Client → signOut mutation → Rails
    Rails → jwt_sessions が Redis からトークン削除（無効化）
-   Client → メモリと localStorage をクリア
+        → Set-Cookie で refreshToken Cookie を破棄（Max-Age=0）
+   Client → メモリをクリア
 
 5. ページリロード
-   Client → localStorage から refreshToken 取得
-   Client → refreshToken mutation → 新しい accessToken 取得
+   Client → refreshToken mutation（Cookie が自動送信される）
+        → 新しい accessToken 取得
 ```
+
+> **CORS設定**: フロントエンドからCookieを送信するために、クライアント側で `credentials: 'include'`、サーバー側で `Access-Control-Allow-Credentials: true` の設定が必要。
 
 ## セキュリティ
 
 - **CSP（Content-Security-Policy）**: インラインスクリプトと外部スクリプトを制限し、XSS自体を防止
 - **トークン無効化**: jwt_sessions がRedisでトークンを管理。ログアウト時に即座に無効化可能
-- **CORS**: フロントエンドオリジンのみ許可（rack-cors）
+- **CORS**: フロントエンドオリジンのみ許可（rack-cors）。`Access-Control-Allow-Credentials: true` でCookie送信を許可
 - **レート制限**: rack-attack で認証エンドポイント 5回/分、投稿 30回/分
+
+## エラーハンドリング
+
+- **戦略**: すべてのエラーはGraphQL標準のトップレベルエラー形式で返す
+  ```json
+  {
+    "data": null,
+    "errors": [
+      {
+        "message": "エラーメッセージ",
+        "extensions": {
+          "code": "AUTHENTICATION_ERROR"
+        }
+      }
+    ]
+  }
+  ```
+- **MVPではUnion型エラー（Result型パターン）は採用しない** — シンプルさを優先し、`errors` 配列でエラーを表現する
+- 主なエラーコード:
+  - `AUTHENTICATION_ERROR` — 未認証・トークン無効
+  - `AUTHORIZATION_ERROR` — 権限不足（他人のツイート削除など）
+  - `VALIDATION_ERROR` — バリデーションエラー（入力値不正）
+  - `NOT_FOUND` — リソースが見つからない
 
 ## ページネーション仕様
 
