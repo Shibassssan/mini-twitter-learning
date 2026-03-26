@@ -45,6 +45,9 @@ end
 | username | string | UNIQUE, NOT NULL | ログインID、英数字+_, 3~15文字 (BR-1) |
 | display_name | string | NOT NULL | 表示名、最大50文字 (BR-6) |
 | bio | text | | 自己紹介、最大200文字 (BR-5) |
+| tweets_count | integer | NOT NULL, DEFAULT 0 | ツイート数（counter_cache） |
+| followers_count | integer | NOT NULL, DEFAULT 0 | フォロワー数（counter_cache） |
+| following_count | integer | NOT NULL, DEFAULT 0 | フォロー中数（counter_cache） |
 | created_at | datetime | NOT NULL | |
 | updated_at | datetime | NOT NULL | |
 
@@ -91,6 +94,7 @@ end
 | uuid | uuid | UNIQUE, NOT NULL | API公開用ID |
 | user_id | bigint | FK → users, NOT NULL | 投稿者 |
 | content | string(300) | NOT NULL | ツイート本文、1~300文字 (BR-4) |
+| likes_count | integer | NOT NULL, DEFAULT 0 | いいね数（counter_cache） |
 | created_at | datetime | NOT NULL | |
 | updated_at | datetime | NOT NULL | |
 
@@ -103,7 +107,7 @@ end
 - `belongs_to :user` (foreign_key: :user_id)
 - `has_many :likes`
 
-**備考:** 編集機能なし（Twitter準拠）。updated_atはRails標準のため付与。
+**備考:** 編集機能なし（Twitter準拠）。updated_atはRails標準のため付与。`likes_count` は Rails の `counter_cache` で自動管理される。
 
 ### likes
 
@@ -168,6 +172,11 @@ users 1──1 credentials
   │
   └── active_storage_attachments (アイコン画像)
 ```
+
+## パフォーマンス設計
+
+- **counter_cache**: `users.tweets_count`, `users.followers_count`, `users.following_count`, `tweets.likes_count` はRailsの `counter_cache` 機能で自動更新される。これにより、カウント取得時にCOUNTクエリが不要になる
+- **DataLoader**: GraphQL の N+1 問題（例: ツイート一覧で各ツイートの著者を取得する場合）は `graphql-batch` または `dataloader` gem を使用して防止する
 
 ## 将来の拡張テーブル（MVP後）
 
