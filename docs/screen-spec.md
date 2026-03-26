@@ -52,7 +52,7 @@ export const Route = createFileRoute('/_guest')({
 
 ### トークンリフレッシュによるセッション復元
 
-`__root.tsx` で初回マウント時に localStorage の `refreshToken` を確認し、存在すれば `refreshToken` mutation でセッションを復元する。復元中はスプラッシュスクリーンを表示。
+`__root.tsx` で初回マウント時に `refreshToken` mutation を実行する。HttpOnly Cookie の refreshToken が自動送信されるため、有効なセッションがあればセッションを復元する。復元中はスプラッシュスクリーンを表示。
 
 ---
 
@@ -288,7 +288,7 @@ graph TB
 
 | 要素 | デスクトップ | モバイル |
 |------|------------|---------|
-| ツイート投稿 | タイムライン上部にインラインフォーム | 非表示（FAB → `/compose` に遷移） |
+| ツイート投稿 | タイムライン上部にインラインフォーム + サイドバー「ツイート」ボタンでモーダル表示（`TweetComposerModal`） | 非表示（FAB → `/compose` に遷移） |
 | 新着通知バナー | タイムライン上部に表示 | 同じ |
 
 ---
@@ -590,7 +590,8 @@ graph TB
 
 | コンポーネント | 説明 | 使用画面 |
 |--------------|------|---------|
-| **TweetComposer** | ツイート入力フォーム。テキストエリア + 文字数カウンター（`/300`）+ 送信ボタン。300文字超過で赤色警告 | タイムライン（デスクトップインライン）、投稿画面（モバイル） |
+| **TweetComposer** | ツイート入力フォーム。テキストエリア + 文字数カウンター（`/300`）+ 送信ボタン。300文字超過で赤色警告 | タイムライン（デスクトップインライン）、投稿画面（モバイル）、TweetComposerModal |
+| **TweetComposerModal** | ツイート投稿モーダル。HeroUI `Modal` + `TweetComposer` コンポーネントで構成。サイドバーの「ツイート」ボタンから開く。`uiStore.isTweetModalOpen` で開閉制御 | デスクトップのみ（サイドバー「ツイート」ボタン） |
 | **SearchInput** | 検索入力欄。デバウンス付き。クリアボタン付き | 検索画面 |
 | **AvatarUploader** | アバター画像アップロード。プレビュー + ファイル選択。2MB / JPEG,PNG,WebP バリデーション | プロフィール編集モーダル |
 
@@ -652,24 +653,36 @@ interface AuthState {
 ```
 
 - `accessToken` はメモリのみ保持（永続化しない）
-- `refreshToken` は `localStorage` に保持
-- ページリロード時: `isInitializing: true` → `refreshToken` mutation → 成功で `setAuth` / 失敗で `clearAuth`
+- `refreshToken` は HttpOnly Cookie に保持（JavaScript からアクセス不可）
+- ページリロード時: `isInitializing: true` → `refreshToken` mutation（Cookie が自動送信される）→ 成功で `setAuth` / 失敗で `clearAuth`
 
 #### uiStore
 
 ```typescript
 interface UIState {
   isProfileEditOpen: boolean
+  isTweetModalOpen: boolean
   activeTimelineTab: 'following' | 'global'
   activeProfileTab: 'tweets' | 'likes'
   activeSearchTab: 'users' | 'tweets'
   openProfileEdit: () => void
   closeProfileEdit: () => void
+  openTweetModal: () => void
+  closeTweetModal: () => void
   setTimelineTab: (tab: 'following' | 'global') => void
   setProfileTab: (tab: 'tweets' | 'likes') => void
   setSearchTab: (tab: 'users' | 'tweets') => void
 }
 ```
+
+### エラーハンドリング方針
+
+- すべてのAPIエラーはGraphQL標準のトップレベルエラー形式（`{ data: null, errors: [...] }`）で返される
+- フロントエンドでは `errors[0].extensions.code` に基づいてエラーの種類を判別し、適切なUI表示を行う
+  - `AUTHENTICATION_ERROR`: ログイン画面にリダイレクト
+  - `VALIDATION_ERROR`: フォームにインラインエラーメッセージを表示
+  - その他: トースト通知またはエラー画面を表示
+- MVPではUnion型エラー（Result型パターン）は採用しない
 
 ---
 
