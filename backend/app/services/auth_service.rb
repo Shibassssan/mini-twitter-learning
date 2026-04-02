@@ -5,6 +5,11 @@ class AuthService
       session.login
     end
 
+    def refresh_access_token!(refresh_token, payload:)
+      session = JWTSessions::Session.new(payload: payload.symbolize_keys)
+      session.refresh(refresh_token)
+    end
+
     def flush_refresh_token!(refresh_token)
       JWTSessions::Session.new.flush_by_token(refresh_token)
     end

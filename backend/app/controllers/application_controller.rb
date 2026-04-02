@@ -8,12 +8,21 @@ class ApplicationController < ActionController::API
 
   def current_user
     return @current_user if defined?(@current_user)
-    return @current_user = nil if found_token.blank?
+    return @current_user = nil if access_header_token.blank?
 
-    authorize_access_request!
+    authorize_by_access_header!
     @current_user = User.find(payload["user_id"])
   rescue ActiveRecord::RecordNotFound
     raise JWTSessions::Errors::Unauthorized, "User not found"
+  end
+
+  def access_header_token
+    authorization = request.headers["Authorization"].to_s
+    scheme, token = authorization.split(" ", 2)
+
+    return if scheme != "Bearer"
+
+    token
   end
 
   def render_authentication_error(_error)

@@ -5,6 +5,7 @@ class GraphqlController < ApplicationController
       variables: prepare_variables(params[:variables]),
       operation_name: params[:operationName],
       context: {
+        controller: self,
         current_user: current_user,
         request: request,
         response: response,
