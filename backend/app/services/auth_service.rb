@@ -5,6 +5,10 @@ class AuthService
       session.login
     end
 
+    def flush_refresh_token!(refresh_token)
+      JWTSessions::Session.new.flush_by_token(refresh_token)
+    end
+
     def refresh_cookie_options(refresh_token)
       {
         value: refresh_token,
