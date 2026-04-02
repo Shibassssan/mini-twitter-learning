@@ -2,6 +2,7 @@ class User < ApplicationRecord
   include HasUuid
 
   has_one :credential, dependent: :destroy
+  has_many :tweets, dependent: :destroy
 
   validates :username,
     presence: true,
