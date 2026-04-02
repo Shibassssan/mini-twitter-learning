@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_02_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_03_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -24,6 +24,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_000002) do
     t.index ["email"], name: "index_credentials_on_email", unique: true
     t.index ["user_id"], name: "index_credentials_on_user_id", unique: true
     t.index ["uuid"], name: "index_credentials_on_uuid", unique: true
+  end
+
+  create_table "tweets", force: :cascade do |t|
+    t.string "content", limit: 300, null: false
+    t.datetime "created_at", null: false
+    t.integer "likes_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.string "uuid", null: false
+    t.index ["user_id", "created_at"], name: "index_tweets_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_tweets_on_user_id"
+    t.index ["uuid"], name: "index_tweets_on_uuid", unique: true
   end
 
   create_table "users", force: :cascade do |t|
@@ -41,4 +53,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_000002) do
   end
 
   add_foreign_key "credentials", "users"
+  add_foreign_key "tweets", "users"
 end
