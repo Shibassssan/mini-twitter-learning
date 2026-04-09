@@ -12,7 +12,13 @@ module Types
     end
 
     def is_liked_by_me
-      false
+      current_user = context[:current_user]
+      return false unless current_user
+
+      dataloader.with(
+        Sources::AssociationExistsLoader,
+        Like, :tweet_id, :user_id, current_user.id
+      ).load(object.id)
     end
   end
 end

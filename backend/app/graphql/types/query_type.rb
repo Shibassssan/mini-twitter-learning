@@ -17,17 +17,31 @@ module Types
       argument :first, Integer, required: false, default_value: ConnectionHelper::DEFAULT_PAGE_SIZE
       argument :after, String, required: false
     end
+    field :liked_tweets, Types::TweetConnectionType, null: false, connection: false, description: "自分がいいねしたツイート一覧" do
+      argument :first, Integer, required: false, default_value: ConnectionHelper::DEFAULT_PAGE_SIZE
+      argument :after, String, required: false
+    end
+    field :followers, Types::UserConnectionType, null: false, connection: false, description: "指定ユーザーのフォロワー一覧" do
+      argument :uuid, ID, required: true
+      argument :first, Integer, required: false, default_value: ConnectionHelper::DEFAULT_PAGE_SIZE
+      argument :after, String, required: false
+    end
+    field :following, Types::UserConnectionType, null: false, connection: false, description: "指定ユーザーのフォロー中一覧" do
+      argument :uuid, ID, required: true
+      argument :first, Integer, required: false, default_value: ConnectionHelper::DEFAULT_PAGE_SIZE
+      argument :after, String, required: false
+    end
 
     def me
       context[:current_user] || raise_unauthenticated!
     end
 
     def timeline(first:, after: nil)
-      context[:current_user] || raise_unauthenticated!
+      current_user = context[:current_user] || raise_unauthenticated!
 
-      # Follow relationships arrive in Phase 3, so the following timeline
-      # intentionally stays empty until those records exist.
-      paginate_relation(Tweet.none, first: first, after: after)
+      followed_ids = Follow.where(follower_id: current_user.id).select(:followed_id)
+      relation = Tweet.where(user_id: followed_ids).includes(:user)
+      paginate_relation(relation, first: first, after: after)
     end
 
     def public_timeline(first:, after: nil)
@@ -41,6 +55,32 @@ module Types
 
       user = User.find_by!(uuid: uuid)
       paginate_relation(user.tweets.includes(:user), first: first, after: after)
+    end
+
+    def liked_tweets(first:, after: nil)
+      current_user = context[:current_user] || raise_unauthenticated!
+
+      tweet_ids = current_user.likes.order(created_at: :desc).select(:tweet_id)
+      relation = Tweet.where(id: tweet_ids).includes(:user)
+      paginate_relation(relation, first: first, after: after)
+    end
+
+    def followers(uuid:, first:, after: nil)
+      context[:current_user] || raise_unauthenticated!
+
+      user = User.find_by!(uuid: uuid)
+      follower_ids = Follow.where(followed_id: user.id).select(:follower_id)
+      relation = User.where(id: follower_ids)
+      paginate_relation(relation, first: first, after: after)
+    end
+
+    def following(uuid:, first:, after: nil)
+      context[:current_user] || raise_unauthenticated!
+
+      user = User.find_by!(uuid: uuid)
+      followed_ids = Follow.where(follower_id: user.id).select(:followed_id)
+      relation = User.where(id: followed_ids)
+      paginate_relation(relation, first: first, after: after)
     end
   end
 end
