@@ -24,6 +24,13 @@ module Mutations
         access_token: tokens[:access],
         user: credential.user
       }
+    rescue GraphQL::ExecutionError
+      raise
+    rescue StandardError
+      raise GraphQL::ExecutionError.new(
+        "Failed to create session",
+        extensions: { code: "INTERNAL_SERVER_ERROR" }
+      )
     end
 
     private

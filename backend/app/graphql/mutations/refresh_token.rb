@@ -22,14 +22,5 @@ module Mutations
     rescue JWTSessions::Errors::Unauthorized, ActiveRecord::RecordNotFound, KeyError
       raise_unauthenticated!
     end
-
-    private
-
-    def raise_unauthenticated!
-      raise GraphQL::ExecutionError.new(
-        "Authentication required",
-        extensions: { code: "AUTHENTICATION_ERROR" }
-      )
-    end
   end
 end

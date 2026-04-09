@@ -31,12 +31,5 @@ module Mutations
         same_site: :lax
       )
     end
-
-    def raise_unauthenticated!
-      raise GraphQL::ExecutionError.new(
-        "Authentication required",
-        extensions: { code: "AUTHENTICATION_ERROR" }
-      )
-    end
   end
 end

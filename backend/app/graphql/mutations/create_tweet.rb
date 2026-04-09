@@ -9,10 +9,12 @@ module Mutations
     def resolve(content:)
       user = context[:current_user] || raise_unauthenticated!
 
-      Tweet.create!(
-        user: user,
-        content: content
-      )
+      ActiveRecord::Base.transaction do
+        Tweet.create!(
+          user: user,
+          content: content.strip
+        )
+      end
     end
   end
 end

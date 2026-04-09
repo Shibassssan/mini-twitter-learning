@@ -8,11 +8,14 @@ module Mutations
 
     def resolve(uuid:)
       user = context[:current_user] || raise_unauthenticated!
-      tweet = Tweet.find_by!(uuid: uuid)
 
-      raise_authorization_error! unless tweet.user_id == user.id
+      ActiveRecord::Base.transaction do
+        tweet = Tweet.lock.find_by!(uuid: uuid)
+        raise_authorization_error! unless tweet.user_id == user.id
 
-      tweet.destroy!
+        tweet.destroy!
+      end
+
       true
     end
   end

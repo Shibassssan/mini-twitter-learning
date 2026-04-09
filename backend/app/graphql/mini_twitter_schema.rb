@@ -14,6 +14,20 @@ class MiniTwitterSchema < GraphQL::Schema
     )
   end
 
+  rescue_from ActiveRecord::RecordNotUnique do
+    raise GraphQL::ExecutionError.new(
+      "Already exists",
+      extensions: { code: "VALIDATION_ERROR" }
+    )
+  end
+
+  rescue_from ActiveRecord::InvalidForeignKey do
+    raise GraphQL::ExecutionError.new(
+      "Referenced resource no longer exists",
+      extensions: { code: "NOT_FOUND" }
+    )
+  end
+
   rescue_from ActiveRecord::RecordNotFound do
     raise GraphQL::ExecutionError.new(
       "Resource not found",
