@@ -6,5 +6,9 @@ module Types
     field :refresh_token, mutation: Mutations::RefreshToken
     field :create_tweet, mutation: Mutations::CreateTweet
     field :delete_tweet, mutation: Mutations::DeleteTweet
+    field :like_tweet, mutation: Mutations::LikeTweet
+    field :unlike_tweet, mutation: Mutations::UnlikeTweet
+    field :follow_user, mutation: Mutations::FollowUser
+    field :unfollow_user, mutation: Mutations::UnfollowUser
   end
 end
