@@ -29,3 +29,6 @@ dist-ssr
 
 .keep
 backend/tmp/*
+
+# OMC internal state
+.omc/
