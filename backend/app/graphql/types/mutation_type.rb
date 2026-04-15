@@ -10,5 +10,7 @@ module Types
     field :unlike_tweet, mutation: Mutations::UnlikeTweet
     field :follow_user, mutation: Mutations::FollowUser
     field :unfollow_user, mutation: Mutations::UnfollowUser
+    field :update_profile, mutation: Mutations::UpdateProfile
+    field :update_avatar, mutation: Mutations::UpdateAvatar
   end
 end
