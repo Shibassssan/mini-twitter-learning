@@ -71,18 +71,17 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
           <span className="font-bold">{user.tweetsCount}</span>
           <span className="text-default-500">ツイート</span>
           <Link
-            to="/users/$username"
+            to="/users/$username/connections"
             params={{ username: user.username }}
-            search={{ tab: 'following' } as never}
+            search={{ tab: 'following' }}
             className="hover:underline"
           >
             <span className="font-bold">{user.followingCount}</span>
             <span className="text-default-500 ml-1">フォロー中</span>
           </Link>
           <Link
-            to="/users/$username"
+            to="/users/$username/connections"
             params={{ username: user.username }}
-            search={{ tab: 'followers' } as never}
             className="hover:underline"
           >
             <span className="font-bold">{user.followersCount}</span>
