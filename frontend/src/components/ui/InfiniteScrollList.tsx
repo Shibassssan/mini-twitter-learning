@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
+import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
 import { EmptyState } from './EmptyState'
 
 interface InfiniteScrollListProps<T> {
