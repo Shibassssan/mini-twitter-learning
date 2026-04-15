@@ -1,0 +1,20 @@
+query SearchUsers($query: String!, $first: Int, $after: String) {
+  searchUsers(query: $query, first: $first, after: $after) {
+    edges {
+      node {
+        id
+        username
+        displayName
+        bio
+        avatarUrl
+        isFollowedByMe
+        followersCount
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}

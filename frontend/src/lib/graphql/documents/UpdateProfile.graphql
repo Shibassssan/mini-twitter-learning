@@ -1,0 +1,9 @@
+mutation UpdateProfile($displayName: String, $bio: String) {
+  updateProfile(displayName: $displayName, bio: $bio) {
+    id
+    username
+    displayName
+    bio
+    avatarUrl
+  }
+}

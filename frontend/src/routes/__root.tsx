@@ -1,7 +1,7 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { apolloClient } from '@/lib/apollo/client'
-import { REFRESH_TOKEN_MUTATION } from '@/lib/graphql/operations/auth'
+import { RefreshTokenDocument } from '@/lib/graphql/generated/graphql'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 
@@ -15,7 +15,7 @@ function RootComponent() {
 
   useEffect(() => {
     apolloClient
-      .mutate({ mutation: REFRESH_TOKEN_MUTATION })
+      .mutate({ mutation: RefreshTokenDocument })
       .then(({ data }) => {
         if (data?.refreshToken) {
           setAuth(data.refreshToken.user, data.refreshToken.accessToken)

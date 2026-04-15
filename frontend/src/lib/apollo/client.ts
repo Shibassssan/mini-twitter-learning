@@ -7,7 +7,8 @@ import {
   from,
 } from '@apollo/client'
 import { onError } from '@apollo/client/link/error'
-import { REFRESH_TOKEN_MUTATION } from '@/lib/graphql/operations/auth'
+import { CombinedGraphQLErrors } from '@apollo/client/errors'
+import { RefreshTokenDocument } from '@/lib/graphql/generated/graphql'
 import { useAuthStore } from '@/lib/stores/authStore'
 
 const httpLink = new HttpLink({
@@ -34,57 +35,57 @@ const resolvePendingRequests = () => {
   pendingRequests = []
 }
 
-const errorLink = onError(({ graphQLErrors, operation, forward }) => {
-  if (graphQLErrors) {
-    for (const err of graphQLErrors) {
-      if (
-        err.extensions?.code === 'UNAUTHORIZED' ||
-        err.message?.toLowerCase().includes('unauthorized') ||
-        err.message?.toLowerCase().includes('not authenticated')
-      ) {
-        if (isRefreshing) {
-          return new Observable((observer) => {
-            pendingRequests.push(() => {
-              const subscriber = {
-                next: observer.next.bind(observer),
-                error: observer.error.bind(observer),
-                complete: observer.complete.bind(observer),
-              }
-              forward(operation).subscribe(subscriber)
-            })
-          })
-        }
+const errorLink = onError(({ error, operation, forward }) => {
+  if (!CombinedGraphQLErrors.is(error)) return
 
-        isRefreshing = true
-
+  for (const err of error.errors) {
+    if (
+      err.extensions?.code === 'UNAUTHORIZED' ||
+      err.message?.toLowerCase().includes('unauthorized') ||
+      err.message?.toLowerCase().includes('not authenticated')
+    ) {
+      if (isRefreshing) {
         return new Observable((observer) => {
-          apolloClient
-            .mutate({ mutation: REFRESH_TOKEN_MUTATION })
-            .then(({ data }) => {
-              if(!data) {
-                throw new Error("セッションが有効ではありません");
-              }
-              const { accessToken, user } = data.refreshToken
-              useAuthStore.getState().setAuth(user, accessToken)
-              resolvePendingRequests()
-              const subscriber = {
-                next: observer.next.bind(observer),
-                error: observer.error.bind(observer),
-                complete: observer.complete.bind(observer),
-              }
-              forward(operation).subscribe(subscriber)
-            })
-            .catch(() => {
-              pendingRequests = []
-              useAuthStore.getState().clearAuth()
-              window.location.href = '/login'
-              observer.error(new Error('Session expired'))
-            })
-            .finally(() => {
-              isRefreshing = false
-            })
+          pendingRequests.push(() => {
+            const subscriber = {
+              next: observer.next.bind(observer),
+              error: observer.error.bind(observer),
+              complete: observer.complete.bind(observer),
+            }
+            forward(operation).subscribe(subscriber)
+          })
         })
       }
+
+      isRefreshing = true
+
+      return new Observable((observer) => {
+        apolloClient
+          .mutate({ mutation: RefreshTokenDocument })
+          .then(({ data }) => {
+            if (!data?.refreshToken) {
+              throw new Error('セッションが有効ではありません')
+            }
+            const { accessToken, user } = data.refreshToken
+            useAuthStore.getState().setAuth(user, accessToken)
+            resolvePendingRequests()
+            const subscriber = {
+              next: observer.next.bind(observer),
+              error: observer.error.bind(observer),
+              complete: observer.complete.bind(observer),
+            }
+            forward(operation).subscribe(subscriber)
+          })
+          .catch(() => {
+            pendingRequests = []
+            useAuthStore.getState().clearAuth()
+            window.location.href = '/login'
+            observer.error(new Error('Session expired'))
+          })
+          .finally(() => {
+            isRefreshing = false
+          })
+      })
     }
   }
 })

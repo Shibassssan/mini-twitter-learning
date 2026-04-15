@@ -1,0 +1,19 @@
+query Followers($uuid: ID!, $first: Int, $after: String) {
+  followers(uuid: $uuid, first: $first, after: $after) {
+    edges {
+      node {
+        id
+        username
+        displayName
+        bio
+        avatarUrl
+        isFollowedByMe
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}

@@ -3,7 +3,6 @@ query Me {
     id
     username
     displayName
-    email
     bio
     tweetsCount
     followersCount

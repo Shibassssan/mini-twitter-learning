@@ -1,5 +1,5 @@
-query Timeline($scope: TimelineScope!, $first: Int, $after: String) {
-  timeline(scope: $scope, first: $first, after: $after) {
+query Timeline($first: Int, $after: String) {
+  timeline(first: $first, after: $after) {
     edges {
       node {
         id

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@apollo/client/react";
 import { signUpSchema, type SignUpFormValues } from "@/lib/validations/auth";
-import { SIGN_UP_MUTATION } from "@/lib/graphql/operations/auth";
+import { SignUpDocument } from "@/lib/graphql/generated/graphql";
 import { useAuthStore } from "@/lib/stores/authStore";
 
 export const Route = createFileRoute("/_guest/signup")({
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_guest/signup")({
 function SignupPage() {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
-  const [signUp, { loading }] = useMutation(SIGN_UP_MUTATION);
+  const [signUp, { loading }] = useMutation(SignUpDocument);
   const {
     register,
     handleSubmit,
@@ -33,7 +33,7 @@ function SignupPage() {
           password: values.password,
         },
       });
-      if(!data) {
+      if(!data?.signUp) {
         throw new Error("登録に失敗しました");
       }
 

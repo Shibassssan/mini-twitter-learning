@@ -9,12 +9,13 @@
     "lint": "biome lint .",
     "format": "biome format --write .",
     "preview": "vite preview",
-    "codegen": "graphql-codegen",
+    "codegen": "graphql-codegen --config src/lib/graphql/codegen.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
     "@apollo/client": "^4.1.7",
+    "@graphql-typed-document-node/core": "^3.2.0",
     "@heroui/react": "^3.0.2",
     "@hookform/resolvers": "^5.2.2",
     "@tailwindcss/vite": "^4.2.2",
@@ -34,7 +35,6 @@
     "@biomejs/biome": "^2.4.10",
     "@graphql-codegen/cli": "^6.2.1",
     "@graphql-codegen/client-preset": "^5.2.4",
-    "@rollup/plugin-graphql": "^2.0.5",
     "@tanstack/router-plugin": "^1.167.12",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",

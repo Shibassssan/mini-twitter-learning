@@ -1,0 +1,172 @@
+type AuthPayload {
+  accessToken: String!
+  user: User!
+}
+
+"""
+An ISO 8601-encoded datetime
+"""
+scalar ISO8601DateTime @specifiedBy(url: "https://tools.ietf.org/html/rfc3339")
+
+type Mutation {
+  """
+  新しいツイートを投稿する
+  """
+  createTweet(content: String!): Tweet
+
+  """
+  自分のツイートを削除する
+  """
+  deleteTweet(uuid: ID!): Boolean
+
+  """
+  ユーザーをフォローする
+  """
+  followUser(userUuid: ID!): User
+
+  """
+  ツイートにいいねする
+  """
+  likeTweet(tweetUuid: ID!): Tweet
+
+  """
+  リフレッシュトークンから新しいアクセストークンを発行する
+  """
+  refreshToken: AuthPayload
+
+  """
+  メールアドレスとパスワードでログインする
+  """
+  signIn(email: String!, password: String!): AuthPayload
+
+  """
+  現在のセッションを無効化してログアウトする
+  """
+  signOut: Boolean
+
+  """
+  ユーザーを作成し、認証トークンを発行する
+  """
+  signUp(displayName: String!, email: String!, password: String!, username: String!): AuthPayload
+
+  """
+  ユーザーのフォローを解除する
+  """
+  unfollowUser(userUuid: ID!): User
+
+  """
+  ツイートのいいねを取り消す
+  """
+  unlikeTweet(tweetUuid: ID!): Tweet
+
+  """
+  自分のアバター画像をアップロードする
+  """
+  updateAvatar(avatar: Upload!): User
+
+  """
+  自分のプロフィール（表示名・自己紹介）を更新する
+  """
+  updateProfile(bio: String, displayName: String): User
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+}
+
+type Query {
+  """
+  指定ユーザーのフォロワー一覧
+  """
+  followers(after: String, first: Int = 20, uuid: ID!): UserConnection!
+
+  """
+  指定ユーザーのフォロー中一覧
+  """
+  following(after: String, first: Int = 20, uuid: ID!): UserConnection!
+
+  """
+  自分がいいねしたツイート一覧
+  """
+  likedTweets(after: String, first: Int = 20): TweetConnection!
+
+  """
+  ログイン中のユーザー情報を返す
+  """
+  me: User
+
+  """
+  全体タイムライン
+  """
+  publicTimeline(after: String, first: Int = 20): TweetConnection!
+
+  """
+  ツイート検索（content 部分一致）
+  """
+  searchTweets(after: String, first: Int = 20, query: String!): TweetConnection!
+
+  """
+  ユーザー検索（username / display_name 部分一致）
+  """
+  searchUsers(after: String, first: Int = 20, query: String!): UserConnection!
+
+  """
+  フォロー中ユーザーのタイムライン
+  """
+  timeline(after: String, first: Int = 20): TweetConnection!
+
+  """
+  ユーザー名でユーザー情報を取得
+  """
+  userByUsername(username: String!): User!
+
+  """
+  指定ユーザーのツイート一覧
+  """
+  userTweets(after: String, first: Int = 20, uuid: ID!): TweetConnection!
+}
+
+type Tweet {
+  author: User!
+  content: String!
+  createdAt: ISO8601DateTime!
+  id: ID!
+  isLikedByMe: Boolean!
+  likesCount: Int!
+}
+
+type TweetConnection {
+  edges: [TweetEdge!]!
+  pageInfo: PageInfo!
+}
+
+type TweetEdge {
+  cursor: String!
+  node: Tweet!
+}
+
+scalar Upload
+
+type User {
+  avatarUrl: String
+  bio: String
+  createdAt: ISO8601DateTime!
+  displayName: String!
+  followersCount: Int!
+  followingCount: Int!
+  id: ID!
+  isFollowedByMe: Boolean!
+  tweetsCount: Int!
+  username: String!
+}
+
+type UserConnection {
+  edges: [UserEdge!]!
+  pageInfo: PageInfo!
+}
+
+type UserEdge {
+  cursor: String!
+  node: User!
+}

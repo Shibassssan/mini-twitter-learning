@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation } from '@apollo/client/react'
-import { CREATE_TWEET_MUTATION } from '@/lib/graphql/operations/tweet'
+import { CreateTweetDocument } from '@/lib/graphql/generated/graphql'
 
 interface TweetComposerProps {
   onSuccess?: () => void
@@ -9,7 +9,7 @@ interface TweetComposerProps {
 
 export function TweetComposer({ onSuccess, refetchQueries }: TweetComposerProps) {
   const [content, setContent] = useState('')
-  const [createTweet, { loading }] = useMutation(CREATE_TWEET_MUTATION, {
+  const [createTweet, { loading }] = useMutation(CreateTweetDocument, {
     refetchQueries: refetchQueries ?? ['PublicTimeline', 'Timeline'],
     onCompleted: () => {
       setContent('')

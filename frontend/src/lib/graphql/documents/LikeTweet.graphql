@@ -1,0 +1,7 @@
+mutation LikeTweet($tweetUuid: ID!) {
+  likeTweet(tweetUuid: $tweetUuid) {
+    id
+    likesCount
+    isLikedByMe
+  }
+}

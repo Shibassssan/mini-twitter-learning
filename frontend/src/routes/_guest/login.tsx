@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@apollo/client/react'
 import { signInSchema, type SignInFormValues } from '@/lib/validations/auth'
-import { SIGN_IN_MUTATION } from '@/lib/graphql/operations/auth'
+import { SignInDocument } from '@/lib/graphql/generated/graphql'
 import { useAuthStore } from '@/lib/stores/authStore'
 
 export const Route = createFileRoute('/_guest/login')({
@@ -13,7 +13,7 @@ export const Route = createFileRoute('/_guest/login')({
 function LoginPage() {
   const navigate = useNavigate()
   const { setAuth } = useAuthStore()
-  const [signIn, { loading }] = useMutation(SIGN_IN_MUTATION)
+  const [signIn, { loading }] = useMutation(SignInDocument)
   const {
     register,
     handleSubmit,
@@ -26,7 +26,7 @@ function LoginPage() {
   const onSubmit = async (values: SignInFormValues) => {
     try {
       const { data } = await signIn({ variables: values })
-      if(!data) {
+      if(!data?.signIn) {
         throw new Error("ログインに失敗しました");
       }
       setAuth(data.signIn.user, data.signIn.accessToken)

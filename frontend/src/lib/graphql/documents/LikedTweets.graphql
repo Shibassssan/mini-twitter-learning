@@ -1,5 +1,5 @@
-query UserTweets($uuid: ID!, $first: Int, $after: String) {
-  userTweets(uuid: $uuid, first: $first, after: $after) {
+query LikedTweets($first: Int, $after: String) {
+  likedTweets(first: $first, after: $after) {
     edges {
       node {
         id

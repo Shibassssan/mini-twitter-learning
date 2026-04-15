@@ -1,14 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@apollo/client/react'
 import { useUiStore } from '@/lib/stores/uiStore'
-import { TIMELINE_QUERY, PUBLIC_TIMELINE_QUERY } from '@/lib/graphql/operations/tweet'
+import { TimelineDocument, PublicTimelineDocument } from '@/lib/graphql/generated/graphql'
 import { TweetCard } from '@/components/tweet/TweetCard'
 import { TweetComposer } from '@/components/tweet/TweetComposer'
 import { TweetCardSkeleton } from '@/components/ui/TweetCardSkeleton'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { InfiniteScrollList } from '@/components/ui/InfiniteScrollList'
 import { FAB } from '@/components/ui/FAB'
-import type { TweetNode } from '@/lib/graphql/types'
 
 export const Route = createFileRoute('/_auth/')({
   component: HomePage,
@@ -17,8 +16,8 @@ export const Route = createFileRoute('/_auth/')({
 const PAGE_SIZE = 20
 
 function FollowingTimeline() {
-  const { data, loading, error, fetchMore } = useQuery(TIMELINE_QUERY, {
-    variables: { scope: 'FOLLOWING', first: PAGE_SIZE },
+  const { data, loading, error, fetchMore } = useQuery(TimelineDocument, {
+    variables: { first: PAGE_SIZE },
     notifyOnNetworkStatusChange: true,
   })
 
@@ -27,7 +26,7 @@ function FollowingTimeline() {
 
   const edges = data?.timeline?.edges ?? []
   const pageInfo = data?.timeline?.pageInfo
-  const tweets: TweetNode[] = edges.map((e) => e.node)
+  const tweets = edges.map((e) => e.node)
 
   return (
     <InfiniteScrollList
@@ -44,7 +43,7 @@ function FollowingTimeline() {
 }
 
 function GlobalTimeline() {
-  const { data, loading, error, fetchMore } = useQuery(PUBLIC_TIMELINE_QUERY, {
+  const { data, loading, error, fetchMore } = useQuery(PublicTimelineDocument, {
     variables: { first: PAGE_SIZE },
     notifyOnNetworkStatusChange: true,
   })
@@ -54,7 +53,7 @@ function GlobalTimeline() {
 
   const edges = data?.publicTimeline?.edges ?? []
   const pageInfo = data?.publicTimeline?.pageInfo
-  const tweets: TweetNode[] = edges.map((e) => e.node)
+  const tweets = edges.map((e) => e.node)
 
   return (
     <InfiniteScrollList
