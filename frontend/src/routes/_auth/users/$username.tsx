@@ -1,4 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useQuery } from '@apollo/client/react'
+import { useAuthStore } from '@/lib/stores/authStore'
+import { UserByUsernameDocument } from '@/lib/graphql/generated/graphql'
+import { ProfileHeader } from '@/components/user/ProfileHeader'
+import { ProfileEditModal } from '@/components/user/ProfileEditModal'
+import { ProfileSkeleton } from '@/components/user/ProfileSkeleton'
+import { ProfileTabs } from '@/components/user/ProfileTabs'
+import { ErrorMessage } from '@/components/ui/ErrorMessage'
 
 export const Route = createFileRoute('/_auth/users/$username')({
   component: UserProfilePage,
@@ -6,11 +14,23 @@ export const Route = createFileRoute('/_auth/users/$username')({
 
 function UserProfilePage() {
   const { username } = Route.useParams()
+  const { user: me } = useAuthStore()
+
+  const { data, loading, error } = useQuery(UserByUsernameDocument, {
+    variables: { username },
+  })
+
+  if (error) return <ErrorMessage message={error.message} onRetry={() => window.location.reload()} />
+  if (loading || !data) return <ProfileSkeleton />
+
+  const user = data.userByUsername
+  const isOwnProfile = me?.id === user.id
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold">@{username}</h1>
-      <p className="text-default-500 mt-2">プロフィール機能はPhase 3で実装予定です。</p>
+    <div>
+      <ProfileHeader user={user} />
+      <ProfileTabs userId={user.id} isOwnProfile={isOwnProfile} />
+      {isOwnProfile && <ProfileEditModal user={user} />}
     </div>
   )
 }
