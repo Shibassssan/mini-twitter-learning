@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { EmptyState } from './EmptyState'
 
@@ -20,14 +21,15 @@ export function InfiniteScrollList<T extends { id: string }>({
   emptyMessage,
   loadingComponent,
 }: InfiniteScrollListProps<T>) {
-  const { sentinelRef } = useInfiniteScroll({ hasNextPage, loading, onLoadMore })
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  useInfiniteScroll(sentinelRef, { hasNextPage, loading, onLoadMore })
 
   return (
     <div>
       {items.map(renderItem)}
       {loading && (loadingComponent ?? <div className="p-4 text-center text-default-400">読み込み中...</div>)}
       {!loading && items.length === 0 && <EmptyState message={emptyMessage} />}
-      <div ref={sentinelRef} className="h-4" />
+      {hasNextPage && <div ref={sentinelRef} className="h-4" />}
     </div>
   )
 }
