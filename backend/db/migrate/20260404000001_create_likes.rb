@@ -9,6 +9,6 @@ class CreateLikes < ActiveRecord::Migration[8.1]
     end
 
     add_index :likes, :uuid, unique: true
-    add_index :likes, [:user_id, :tweet_id], unique: true
+    add_index :likes, [ :user_id, :tweet_id ], unique: true
   end
 end

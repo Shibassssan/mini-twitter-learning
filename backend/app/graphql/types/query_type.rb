@@ -31,6 +31,19 @@ module Types
       argument :first, Integer, required: false, default_value: ConnectionHelper::DEFAULT_PAGE_SIZE
       argument :after, String, required: false
     end
+    field :user_by_username, Types::UserType, null: false, description: "ユーザー名でユーザー情報を取得" do
+      argument :username, String, required: true
+    end
+    field :search_users, Types::UserConnectionType, null: false, connection: false, description: "ユーザー検索（username / display_name 部分一致）" do
+      argument :query, String, required: true
+      argument :first, Integer, required: false, default_value: ConnectionHelper::DEFAULT_PAGE_SIZE
+      argument :after, String, required: false
+    end
+    field :search_tweets, Types::TweetConnectionType, null: false, connection: false, description: "ツイート検索（content 部分一致）" do
+      argument :query, String, required: true
+      argument :first, Integer, required: false, default_value: ConnectionHelper::DEFAULT_PAGE_SIZE
+      argument :after, String, required: false
+    end
 
     def me
       context[:current_user] || raise_unauthenticated!
@@ -80,6 +93,32 @@ module Types
       user = User.find_by!(uuid: uuid)
       followed_ids = Follow.where(follower_id: user.id).select(:followed_id)
       relation = User.where(id: followed_ids)
+      paginate_relation(relation, first: first, after: after)
+    end
+
+    def user_by_username(username:)
+      context[:current_user] || raise_unauthenticated!
+
+      User.find_by!(username: username)
+    end
+
+    def search_users(query:, first:, after: nil)
+      context[:current_user] || raise_unauthenticated!
+
+      raise_validation_error!("Search query must be at least 1 character") if query.strip.blank?
+
+      sanitized = ActiveRecord::Base.sanitize_sql_like(query.strip)
+      relation = User.where("username ILIKE :q OR display_name ILIKE :q", q: "%#{sanitized}%")
+      paginate_relation(relation, first: first, after: after)
+    end
+
+    def search_tweets(query:, first:, after: nil)
+      context[:current_user] || raise_unauthenticated!
+
+      raise_validation_error!("Search query must be at least 1 character") if query.strip.blank?
+
+      sanitized = ActiveRecord::Base.sanitize_sql_like(query.strip)
+      relation = Tweet.where("content ILIKE :q", q: "%#{sanitized}%").includes(:user)
       paginate_relation(relation, first: first, after: after)
     end
   end
