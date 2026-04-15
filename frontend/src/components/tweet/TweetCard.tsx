@@ -19,6 +19,7 @@ export interface TweetCardData {
     id: string
     username: string
     displayName: string
+    avatarUrl?: string | null
   }
 }
 
@@ -72,10 +73,17 @@ export function TweetCard({ tweet, onDelete }: TweetCardProps) {
   return (
     <>
       <article className="flex gap-3 p-4 border-b border-divider hover:bg-default-50 transition-colors">
-        {/* アバター */}
-        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold shrink-0">
-          {initials}
-        </div>
+        {tweet.author.avatarUrl ? (
+          <img
+            src={tweet.author.avatarUrl}
+            alt={tweet.author.displayName}
+            className="w-10 h-10 rounded-full object-cover shrink-0"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold shrink-0">
+            {initials}
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           {/* ヘッダー */}
           <div className="flex items-center gap-2 flex-wrap">
@@ -97,7 +105,7 @@ export function TweetCard({ tweet, onDelete }: TweetCardProps) {
           </div>
           {/* 本文 */}
           <p className="mt-1 text-sm whitespace-pre-wrap break-words">{tweet.content}</p>
-          {/* いいねカウント（表示のみ、Phase 3で操作を追加） */}
+          {/* いいね */}
           <button
             type="button"
             onClick={toggleLike}
