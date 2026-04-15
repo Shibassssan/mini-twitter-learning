@@ -6,6 +6,7 @@ import {
   Observable,
   from,
 } from '@apollo/client'
+import { relayStylePagination } from '@apollo/client/utilities'
 import { onError } from '@apollo/client/link/error'
 import { CombinedGraphQLErrors } from '@apollo/client/errors'
 import { RefreshTokenDocument } from '@/lib/graphql/generated/graphql'
@@ -92,6 +93,21 @@ const errorLink = onError(({ error, operation, forward }) => {
 
 export const apolloClient = new ApolloClient({
   link: from([errorLink, authLink, httpLink]),
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          timeline: relayStylePagination(),
+          publicTimeline: relayStylePagination(),
+          userTweets: relayStylePagination(['uuid']),
+          likedTweets: relayStylePagination(['uuid']),
+          followers: relayStylePagination(['uuid']),
+          following: relayStylePagination(['uuid']),
+          searchUsers: relayStylePagination(['query']),
+          searchTweets: relayStylePagination(['query']),
+        },
+      },
+    },
+  }),
   dataMasking: false,
 })
