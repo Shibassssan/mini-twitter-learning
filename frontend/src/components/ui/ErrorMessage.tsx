@@ -8,7 +8,7 @@ export function ErrorMessage({ message = 'エラーが発生しました', onRet
     <div className="flex flex-col items-center gap-3 p-8 text-center">
       <p className="text-danger">{message}</p>
       {onRetry && (
-        <button onClick={onRetry} className="text-primary text-sm underline">
+        <button type="button" onClick={onRetry} className="text-primary text-sm underline">
           再試行
         </button>
       )}

@@ -43,10 +43,10 @@ export function ConfirmDialog({
             <p>{message}</p>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="light" onPress={onClose}>
+            <Button variant="ghost" onPress={onClose}>
               キャンセル
             </Button>
-            <Button variant="solid" className="bg-danger text-white" onPress={onConfirm} isDisabled={isLoading}>
+            <Button variant="danger" onPress={onConfirm} isDisabled={isLoading}>
               {isLoading ? '処理中...' : confirmLabel}
             </Button>
           </Modal.Footer>

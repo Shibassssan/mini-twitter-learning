@@ -4,6 +4,7 @@ import { apolloClient } from '@/lib/apollo/client'
 import { RefreshTokenDocument } from '@/lib/graphql/generated/graphql'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -26,5 +27,9 @@ function RootComponent() {
   }, [setAuth, clearAuth])
 
   if (initializing) return <LoadingScreen />
-  return <Outlet />
+  return (
+    <ErrorBoundary>
+      <Outlet />
+    </ErrorBoundary>
+  )
 }
