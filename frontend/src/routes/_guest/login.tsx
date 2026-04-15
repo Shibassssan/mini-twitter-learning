@@ -5,6 +5,7 @@ import { useMutation } from '@apollo/client/react'
 import { signInSchema, type SignInFormValues } from '@/lib/validations/auth'
 import { SignInDocument } from '@/lib/graphql/generated/graphql'
 import { useAuthStore } from '@/lib/stores/authStore'
+import { extractGqlErrorMessage } from '@/lib/utils/graphqlError'
 
 export const Route = createFileRoute('/_guest/login')({
   component: LoginPage,
@@ -32,8 +33,7 @@ function LoginPage() {
       setAuth(data.signIn.user, data.signIn.accessToken)
       navigate({ to: '/' })
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'ログインに失敗しました'
-      setError('root', { message: msg })
+      setError('root', { message: extractGqlErrorMessage(e, 'ログインに失敗しました') })
     }
   }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@apollo/client/react'
 import { CreateTweetDocument } from '@/lib/graphql/generated/graphql'
+import { extractGqlErrorMessage } from '@/lib/utils/graphqlError'
 
 interface TweetComposerProps {
   onSuccess?: () => void
@@ -9,11 +10,16 @@ interface TweetComposerProps {
 
 export function TweetComposer({ onSuccess, refetchQueries }: TweetComposerProps) {
   const [content, setContent] = useState('')
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [createTweet, { loading }] = useMutation(CreateTweetDocument, {
     refetchQueries: refetchQueries ?? ['PublicTimeline', 'Timeline'],
     onCompleted: () => {
       setContent('')
+      setErrorMsg(null)
       onSuccess?.()
+    },
+    onError: (err) => {
+      setErrorMsg(extractGqlErrorMessage(err, '投稿に失敗しました'))
     },
   })
 
@@ -22,6 +28,7 @@ export function TweetComposer({ onSuccess, refetchQueries }: TweetComposerProps)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!isValid) return
+    setErrorMsg(null)
     createTweet({ variables: { content } })
   }
 
@@ -35,6 +42,9 @@ export function TweetComposer({ onSuccess, refetchQueries }: TweetComposerProps)
         maxLength={300}
         className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-default-400"
       />
+      {errorMsg && (
+        <p className="text-danger text-xs mt-1">{errorMsg}</p>
+      )}
       <div className="flex items-center justify-between mt-2">
         <span className={`text-xs ${content.length > 280 ? 'text-danger' : 'text-default-400'}`}>
           {content.length}/300

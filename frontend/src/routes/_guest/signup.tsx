@@ -5,6 +5,7 @@ import { useMutation } from "@apollo/client/react";
 import { signUpSchema, type SignUpFormValues } from "@/lib/validations/auth";
 import { SignUpDocument } from "@/lib/graphql/generated/graphql";
 import { useAuthStore } from "@/lib/stores/authStore";
+import { extractGqlErrorMessage } from "@/lib/utils/graphqlError";
 
 export const Route = createFileRoute("/_guest/signup")({
   component: SignupPage,
@@ -40,8 +41,7 @@ function SignupPage() {
       setAuth(data.signUp.user, data.signUp.accessToken);
       navigate({ to: "/" });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "登録に失敗しました";
-      setError("root", { message: msg });
+      setError("root", { message: extractGqlErrorMessage(e, "登録に失敗しました") });
     }
   };
 
