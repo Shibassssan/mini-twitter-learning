@@ -19,6 +19,14 @@ module Mutations
         )
         user
       end
+    rescue GraphQL::ExecutionError
+      raise
+    rescue ActiveRecord::RecordInvalid => e
+      raise_validation_error!(e.record.errors.full_messages.join(", "))
+    rescue ActiveSupport::MessageVerifier::InvalidSignature
+      raise_validation_error!("Invalid avatar file")
+    rescue StandardError
+      raise_validation_error!("Failed to update avatar")
     end
 
     private

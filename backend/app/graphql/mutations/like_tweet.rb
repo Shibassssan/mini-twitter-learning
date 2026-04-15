@@ -14,6 +14,16 @@ module Mutations
         Like.create!(user: user, tweet: tweet)
         tweet.reload
       end
+    rescue GraphQL::ExecutionError
+      raise
+    rescue ActiveRecord::RecordNotFound
+      raise_not_found!("Tweet not found")
+    rescue ActiveRecord::RecordNotUnique
+      raise_validation_error!("Already liked this tweet")
+    rescue ActiveRecord::RecordInvalid => e
+      raise_validation_error!(e.record.errors.full_messages.join(", "))
+    rescue StandardError
+      raise_validation_error!("Failed to like tweet")
     end
   end
 end

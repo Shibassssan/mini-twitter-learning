@@ -15,6 +15,12 @@ module Mutations
         like.destroy!
         tweet.reload
       end
+    rescue GraphQL::ExecutionError
+      raise
+    rescue ActiveRecord::RecordNotFound
+      raise_not_found!("Like not found")
+    rescue StandardError
+      raise_validation_error!("Failed to unlike tweet")
     end
   end
 end

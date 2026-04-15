@@ -44,4 +44,34 @@ RSpec.describe "GraphQL deleteTweet", type: :request do
     expect(body["data"]["deleteTweet"]).to be_nil
     expect(body["errors"].first["extensions"]["code"]).to eq("AUTHORIZATION_ERROR")
   end
+
+  it "returns an authentication error when unauthenticated" do
+    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
+
+    post "/graphql", params: {
+      query: query,
+      variables: { uuid: tweet.uuid }.to_json,
+      operationName: "DeleteTweet"
+    }
+
+    body = JSON.parse(response.body)
+
+    expect(body["data"]["deleteTweet"]).to be_nil
+    expect(body["errors"].first["extensions"]["code"]).to eq("AUTHENTICATION_ERROR")
+  end
+
+  it "returns a not found error for non-existent tweet" do
+    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(owner)
+
+    post "/graphql", params: {
+      query: query,
+      variables: { uuid: "00000000-0000-0000-0000-000000000000" }.to_json,
+      operationName: "DeleteTweet"
+    }
+
+    body = JSON.parse(response.body)
+
+    expect(body["data"]["deleteTweet"]).to be_nil
+    expect(body["errors"].first["extensions"]["code"]).to eq("NOT_FOUND")
+  end
 end

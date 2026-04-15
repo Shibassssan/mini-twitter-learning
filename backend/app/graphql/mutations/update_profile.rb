@@ -20,6 +20,12 @@ module Mutations
         user.update!(permitted)
         user
       end
+    rescue GraphQL::ExecutionError
+      raise
+    rescue ActiveRecord::RecordInvalid => e
+      raise_validation_error!(e.record.errors.full_messages.join(", "))
+    rescue StandardError
+      raise_validation_error!("Failed to update profile")
     end
   end
 end

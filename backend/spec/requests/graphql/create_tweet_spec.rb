@@ -50,6 +50,21 @@ RSpec.describe "GraphQL createTweet", type: :request do
     expect(body["errors"].first["extensions"]["code"]).to eq("VALIDATION_ERROR")
   end
 
+  it "strips whitespace from content" do
+    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+
+    post "/graphql", params: {
+      query: query,
+      variables: { content: "  Hello with spaces  " }.to_json,
+      operationName: "CreateTweet"
+    }
+
+    body = JSON.parse(response.body)
+
+    expect(body["errors"]).to be_nil
+    expect(body.dig("data", "createTweet", "content")).to eq("Hello with spaces")
+  end
+
   it "returns an authentication error when unauthenticated" do
     allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
 

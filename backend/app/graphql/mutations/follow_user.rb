@@ -16,6 +16,16 @@ module Mutations
         Follow.create!(follower: current_user, followed: target_user)
         target_user.reload
       end
+    rescue GraphQL::ExecutionError
+      raise
+    rescue ActiveRecord::RecordNotFound
+      raise_not_found!("User not found")
+    rescue ActiveRecord::RecordNotUnique
+      raise_validation_error!("Already following this user")
+    rescue ActiveRecord::RecordInvalid => e
+      raise_validation_error!(e.record.errors.full_messages.join(", "))
+    rescue StandardError
+      raise_validation_error!("Failed to follow user")
     end
   end
 end

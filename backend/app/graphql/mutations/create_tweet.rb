@@ -15,6 +15,12 @@ module Mutations
           content: content.strip
         )
       end
+    rescue GraphQL::ExecutionError
+      raise
+    rescue ActiveRecord::RecordInvalid => e
+      raise_validation_error!(e.record.errors.full_messages.join(", "))
+    rescue StandardError
+      raise_validation_error!("Failed to create tweet")
     end
   end
 end

@@ -15,6 +15,12 @@ module Mutations
         follow.destroy!
         target_user.reload
       end
+    rescue GraphQL::ExecutionError
+      raise
+    rescue ActiveRecord::RecordNotFound
+      raise_not_found!("Follow relationship not found")
+    rescue StandardError
+      raise_validation_error!("Failed to unfollow user")
     end
   end
 end

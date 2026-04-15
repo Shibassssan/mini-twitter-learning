@@ -17,6 +17,12 @@ module Mutations
       end
 
       true
+    rescue GraphQL::ExecutionError
+      raise
+    rescue ActiveRecord::RecordNotFound
+      raise_not_found!("Tweet not found")
+    rescue StandardError
+      raise_validation_error!("Failed to delete tweet")
     end
   end
 end
