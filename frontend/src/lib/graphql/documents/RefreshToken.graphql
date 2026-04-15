@@ -1,0 +1,10 @@
+mutation RefreshToken {
+  refreshToken {
+    accessToken
+    user {
+      id
+      username
+      displayName
+    }
+  }
+}

@@ -1,0 +1,12 @@
+query Me {
+  me {
+    id
+    username
+    displayName
+    email
+    bio
+    tweetsCount
+    followersCount
+    followingCount
+  }
+}

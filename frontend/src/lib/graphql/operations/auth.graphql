@@ -1,0 +1,59 @@
+mutation SignUp(
+  $username: String!
+  $displayName: String!
+  $email: String!
+  $password: String!
+) {
+  signUp(
+    username: $username
+    displayName: $displayName
+    email: $email
+    password: $password
+  ) {
+    accessToken
+    user {
+      id
+      username
+      displayName
+    }
+  }
+}
+
+mutation SignIn($email: String!, $password: String!) {
+  signIn(email: $email, password: $password) {
+    accessToken
+    user {
+      id
+      username
+      displayName
+    }
+  }
+}
+
+mutation SignOut {
+  signOut
+}
+
+mutation RefreshToken {
+  refreshToken {
+    accessToken
+    user {
+      id
+      username
+      displayName
+    }
+  }
+}
+
+query Me {
+  me {
+    id
+    username
+    displayName
+    email
+    bio
+    tweetsCount
+    followersCount
+    followingCount
+  }
+}

@@ -1,0 +1,90 @@
+query Timeline($scope: TimelineScope!, $first: Int, $after: String) {
+  timeline(scope: $scope, first: $first, after: $after) {
+    edges {
+      node {
+        id
+        content
+        createdAt
+        likesCount
+        isLikedByMe
+        author {
+          id
+          username
+          displayName
+        }
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query PublicTimeline($first: Int, $after: String) {
+  publicTimeline(first: $first, after: $after) {
+    edges {
+      node {
+        id
+        content
+        createdAt
+        likesCount
+        isLikedByMe
+        author {
+          id
+          username
+          displayName
+        }
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query UserTweets($userId: ID!, $first: Int, $after: String) {
+  userTweets(userId: $userId, first: $first, after: $after) {
+    edges {
+      node {
+        id
+        content
+        createdAt
+        likesCount
+        isLikedByMe
+        author {
+          id
+          username
+          displayName
+        }
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+mutation CreateTweet($content: String!) {
+  createTweet(content: $content) {
+    id
+    content
+    createdAt
+    likesCount
+    isLikedByMe
+    author {
+      id
+      username
+      displayName
+    }
+  }
+}
+
+mutation DeleteTweet($id: ID!) {
+  deleteTweet(id: $id)
+}

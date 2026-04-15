@@ -1,0 +1,14 @@
+mutation CreateTweet($content: String!) {
+  createTweet(content: $content) {
+    id
+    content
+    createdAt
+    likesCount
+    isLikedByMe
+    author {
+      id
+      username
+      displayName
+    }
+  }
+}

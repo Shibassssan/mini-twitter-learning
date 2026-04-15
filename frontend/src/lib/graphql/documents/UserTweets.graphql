@@ -1,0 +1,23 @@
+query UserTweets($userId: ID!, $first: Int, $after: String) {
+  userTweets(userId: $userId, first: $first, after: $after) {
+    edges {
+      node {
+        id
+        content
+        createdAt
+        likesCount
+        isLikedByMe
+        author {
+          id
+          username
+          displayName
+        }
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}

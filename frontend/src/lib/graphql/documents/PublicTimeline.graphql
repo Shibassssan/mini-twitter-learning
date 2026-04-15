@@ -1,0 +1,23 @@
+query PublicTimeline($first: Int, $after: String) {
+  publicTimeline(first: $first, after: $after) {
+    edges {
+      node {
+        id
+        content
+        createdAt
+        likesCount
+        isLikedByMe
+        author {
+          id
+          username
+          displayName
+        }
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
