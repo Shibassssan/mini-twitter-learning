@@ -1,85 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@apollo/client/react'
 import { useUiStore } from '@/lib/stores/uiStore'
-import { SearchTweetsDocument, SearchUsersDocument } from '@/lib/graphql/generated/graphql'
-import { TweetCard } from '@/components/tweet/TweetCard'
-import { UserCard } from '@/components/user/UserCard'
-import { TweetCardSkeleton } from '@/components/ui/TweetCardSkeleton'
-import { ErrorMessage } from '@/components/ui/ErrorMessage'
+import { useDebounce } from '@/lib/hooks/useDebounce'
+import { UserSearchResults } from '@/components/user/UserSearchResults'
+import { TweetSearchResults } from '@/components/tweet/TweetSearchResults'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { InfiniteScrollList } from '@/components/ui/InfiniteScrollList'
 
 export const Route = createFileRoute('/_auth/search')({
   component: SearchPage,
 })
-
-const PAGE_SIZE = 20
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value)
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay)
-    return () => clearTimeout(timer)
-  }, [value, delay])
-  return debouncedValue
-}
-
-function UserSearchResults({ query }: { query: string }) {
-  const { data, loading, error, fetchMore } = useQuery(SearchUsersDocument, {
-    variables: { query, first: PAGE_SIZE },
-    skip: !query,
-    notifyOnNetworkStatusChange: true,
-  })
-
-  if (error) return <ErrorMessage message={error.message} onRetry={() => window.location.reload()} />
-  if (loading && !data) return <>{Array.from({ length: 3 }).map((_, i) => <TweetCardSkeleton key={i} />)}</>
-
-  const edges = data?.searchUsers?.edges ?? []
-  const pageInfo = data?.searchUsers?.pageInfo
-  const users = edges.map((e) => e.node)
-
-  return (
-    <InfiniteScrollList
-      items={users}
-      renderItem={(user) => <UserCard key={user.id} user={user} />}
-      hasNextPage={pageInfo?.hasNextPage ?? false}
-      loading={loading}
-      onLoadMore={() =>
-        fetchMore({ variables: { after: pageInfo?.endCursor } })
-      }
-      emptyMessage="ユーザーが見つかりませんでした"
-    />
-  )
-}
-
-function TweetSearchResults({ query }: { query: string }) {
-  const { data, loading, error, fetchMore } = useQuery(SearchTweetsDocument, {
-    variables: { query, first: PAGE_SIZE },
-    skip: !query,
-    notifyOnNetworkStatusChange: true,
-  })
-
-  if (error) return <ErrorMessage message={error.message} onRetry={() => window.location.reload()} />
-  if (loading && !data) return <>{Array.from({ length: 3 }).map((_, i) => <TweetCardSkeleton key={i} />)}</>
-
-  const edges = data?.searchTweets?.edges ?? []
-  const pageInfo = data?.searchTweets?.pageInfo
-  const tweets = edges.map((e) => e.node)
-
-  return (
-    <InfiniteScrollList
-      items={tweets}
-      renderItem={(tweet) => <TweetCard key={tweet.id} tweet={tweet} />}
-      hasNextPage={pageInfo?.hasNextPage ?? false}
-      loading={loading}
-      onLoadMore={() =>
-        fetchMore({ variables: { after: pageInfo?.endCursor } })
-      }
-      emptyMessage="ツイートが見つかりませんでした"
-    />
-  )
-}
 
 function SearchPage() {
   const [inputValue, setInputValue] = useState('')

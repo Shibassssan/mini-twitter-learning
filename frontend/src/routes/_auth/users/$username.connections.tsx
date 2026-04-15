@@ -1,18 +1,13 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@apollo/client/react'
-import {
-  UserByUsernameDocument,
-  FollowersDocument,
-  FollowingDocument,
-} from '@/lib/graphql/generated/graphql'
-import { UserCard } from '@/components/user/UserCard'
+import { UserByUsernameDocument } from '@/lib/graphql/generated/graphql'
+import { FollowersList } from '@/components/user/FollowersList'
+import { FollowingList } from '@/components/user/FollowingList'
+import { UserCardSkeletonList } from '@/components/ui/UserCardSkeleton'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
-import { InfiniteScrollList } from '@/components/ui/InfiniteScrollList'
 
 type Tab = 'followers' | 'following'
-
-const PAGE_SIZE = 20
 
 export const Route = createFileRoute('/_auth/users/$username/connections')({
   component: ConnectionsPage,
@@ -20,78 +15,6 @@ export const Route = createFileRoute('/_auth/users/$username/connections')({
     tab: search.tab === 'following' ? 'following' : undefined,
   }),
 })
-
-function UserCardSkeleton() {
-  return (
-    <div className="flex gap-3 p-4 border-b border-divider animate-pulse">
-      <div className="w-10 h-10 rounded-full bg-default-200 shrink-0" />
-      <div className="flex-1 space-y-2">
-        <div className="h-4 bg-default-200 rounded w-24" />
-        <div className="h-3 bg-default-200 rounded w-16" />
-      </div>
-    </div>
-  )
-}
-
-function SkeletonList() {
-  return (
-    <>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <UserCardSkeleton key={i} />
-      ))}
-    </>
-  )
-}
-
-function FollowersList({ userUuid }: { userUuid: string }) {
-  const { data, loading, error, fetchMore, refetch } = useQuery(FollowersDocument, {
-    variables: { uuid: userUuid, first: PAGE_SIZE },
-    notifyOnNetworkStatusChange: true,
-  })
-
-  if (error) return <ErrorMessage message={error.message} onRetry={() => refetch()} />
-  if (loading && !data) return <SkeletonList />
-
-  const edges = data?.followers?.edges ?? []
-  const pageInfo = data?.followers?.pageInfo
-  const users = edges.map((e) => e.node)
-
-  return (
-    <InfiniteScrollList
-      items={users}
-      renderItem={(user) => <UserCard key={user.id} user={user} />}
-      hasNextPage={pageInfo?.hasNextPage ?? false}
-      loading={loading}
-      onLoadMore={() => fetchMore({ variables: { after: pageInfo?.endCursor } })}
-      emptyMessage="フォロワーはまだいません"
-    />
-  )
-}
-
-function FollowingList({ userUuid }: { userUuid: string }) {
-  const { data, loading, error, fetchMore, refetch } = useQuery(FollowingDocument, {
-    variables: { uuid: userUuid, first: PAGE_SIZE },
-    notifyOnNetworkStatusChange: true,
-  })
-
-  if (error) return <ErrorMessage message={error.message} onRetry={() => refetch()} />
-  if (loading && !data) return <SkeletonList />
-
-  const edges = data?.following?.edges ?? []
-  const pageInfo = data?.following?.pageInfo
-  const users = edges.map((e) => e.node)
-
-  return (
-    <InfiniteScrollList
-      items={users}
-      renderItem={(user) => <UserCard key={user.id} user={user} />}
-      hasNextPage={pageInfo?.hasNextPage ?? false}
-      loading={loading}
-      onLoadMore={() => fetchMore({ variables: { after: pageInfo?.endCursor } })}
-      emptyMessage="フォロー中のユーザーはいません"
-    />
-  )
-}
 
 function ConnectionsPage() {
   const { username } = Route.useParams()
@@ -114,9 +37,9 @@ function ConnectionsPage() {
   }
 
   if (error) return <ErrorMessage message={error.message} onRetry={() => refetch()} />
-  if (loading || !data) return <SkeletonList />
+  if (loading || !data) return <UserCardSkeletonList />
 
-  const userUuid = data.userByUsername.id
+  const user = data.userByUsername
 
   return (
     <div>
@@ -130,7 +53,7 @@ function ConnectionsPage() {
             ← 戻る
           </button>
           <div>
-            <h1 className="text-lg font-bold">{data.userByUsername.displayName}</h1>
+            <h1 className="text-lg font-bold">{user.displayName}</h1>
             <p className="text-xs text-default-400">@{username}</p>
           </div>
         </div>
@@ -161,9 +84,9 @@ function ConnectionsPage() {
       </div>
 
       {activeTab === 'followers' ? (
-        <FollowersList userUuid={userUuid} />
+        <FollowersList userUuid={user.id} />
       ) : (
-        <FollowingList userUuid={userUuid} />
+        <FollowingList userUuid={user.id} />
       )}
     </div>
   )

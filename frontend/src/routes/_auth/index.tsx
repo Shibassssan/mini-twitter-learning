@@ -1,80 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@apollo/client/react'
 import { useUiStore } from '@/lib/stores/uiStore'
-import { TimelineDocument, PublicTimelineDocument } from '@/lib/graphql/generated/graphql'
-import { TweetCard } from '@/components/tweet/TweetCard'
+import { FollowingTimeline } from '@/components/tweet/FollowingTimeline'
+import { GlobalTimeline } from '@/components/tweet/GlobalTimeline'
 import { TweetComposer } from '@/components/tweet/TweetComposer'
-import { TweetCardSkeleton } from '@/components/ui/TweetCardSkeleton'
-import { ErrorMessage } from '@/components/ui/ErrorMessage'
-import { InfiniteScrollList } from '@/components/ui/InfiniteScrollList'
 import { FAB } from '@/components/ui/FAB'
 
 export const Route = createFileRoute('/_auth/')({
   component: HomePage,
 })
 
-const PAGE_SIZE = 20
-
-function FollowingTimeline() {
-  const { data, loading, error, fetchMore } = useQuery(TimelineDocument, {
-    variables: { first: PAGE_SIZE },
-    notifyOnNetworkStatusChange: true,
-  })
-
-  if (error) return <ErrorMessage message={error.message} onRetry={() => window.location.reload()} />
-  if (loading && !data) return <>{Array.from({ length: 3 }).map((_, i) => <TweetCardSkeleton key={i} />)}</>
-
-  const edges = data?.timeline?.edges ?? []
-  const pageInfo = data?.timeline?.pageInfo
-  const tweets = edges.map((e) => e.node)
-
-  return (
-    <InfiniteScrollList
-      items={tweets}
-      renderItem={(tweet) => <TweetCard key={tweet.id} tweet={tweet} />}
-      hasNextPage={pageInfo?.hasNextPage ?? false}
-      loading={loading}
-      onLoadMore={() =>
-        fetchMore({ variables: { after: pageInfo?.endCursor } })
-      }
-      emptyMessage="フォロー中のユーザーのツイートはありません"
-    />
-  )
-}
-
-function GlobalTimeline() {
-  const { data, loading, error, fetchMore } = useQuery(PublicTimelineDocument, {
-    variables: { first: PAGE_SIZE },
-    notifyOnNetworkStatusChange: true,
-  })
-
-  if (error) return <ErrorMessage message={error.message} onRetry={() => window.location.reload()} />
-  if (loading && !data) return <>{Array.from({ length: 3 }).map((_, i) => <TweetCardSkeleton key={i} />)}</>
-
-  const edges = data?.publicTimeline?.edges ?? []
-  const pageInfo = data?.publicTimeline?.pageInfo
-  const tweets = edges.map((e) => e.node)
-
-  return (
-    <InfiniteScrollList
-      items={tweets}
-      renderItem={(tweet) => <TweetCard key={tweet.id} tweet={tweet} />}
-      hasNextPage={pageInfo?.hasNextPage ?? false}
-      loading={loading}
-      onLoadMore={() =>
-        fetchMore({ variables: { after: pageInfo?.endCursor } })
-      }
-      emptyMessage="まだツイートはありません"
-    />
-  )
-}
-
 function HomePage() {
   const { activeTimelineTab, setActiveTimelineTab } = useUiStore()
 
   return (
     <div>
-      {/* ヘッダー */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-divider">
         <h1 className="px-4 py-3 text-xl font-bold hidden md:block">ホーム</h1>
         <div className="flex">
@@ -101,15 +40,12 @@ function HomePage() {
         </div>
       </div>
 
-      {/* デスクトップ: インラインTweetComposer */}
       <div className="hidden md:block">
         <TweetComposer />
       </div>
 
-      {/* タイムライン */}
       {activeTimelineTab === 'following' ? <FollowingTimeline /> : <GlobalTimeline />}
 
-      {/* モバイル: FAB */}
       <FAB />
     </div>
   )
