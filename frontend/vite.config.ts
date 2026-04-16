@@ -10,6 +10,18 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (id.includes('node_modules/@apollo/client')) return 'apollo'
+          if (id.includes('node_modules/@heroui')) return 'heroui'
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) return 'vendor'
+        },
+      },
+    },
+  },
   plugins: [
     TanStackRouterVite({ routesDirectory: './src/routes', generatedRouteTree: './src/routeTree.gen.ts' }),
     react(),
@@ -18,6 +30,11 @@ export default defineConfig({
   server: {
     proxy: {
       '/graphql': 'http://localhost:3000',
+      '/cable': {
+        target: 'http://localhost:3000',
+        ws: true,
+        changeOrigin: true,
+      },
     },
   },
 })
