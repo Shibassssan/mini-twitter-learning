@@ -127,6 +127,18 @@ type Query {
   userTweets(after: String, first: Int = 20, uuid: ID!): TweetConnection!
 }
 
+type Subscription {
+  """
+  新しいツイートが投稿されたときに通知
+  """
+  tweetAdded: Tweet!
+
+  """
+  指定ツイートのいいね数・状態が変わったときに通知
+  """
+  tweetLikeUpdated(tweetId: ID!): Tweet!
+}
+
 type Tweet {
   author: User!
   content: String!

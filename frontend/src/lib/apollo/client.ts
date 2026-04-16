@@ -5,11 +5,14 @@ import {
   InMemoryCache,
   Observable,
   from,
+  split,
 } from '@apollo/client'
-import { relayStylePagination } from '@apollo/client/utilities'
+import { getMainDefinition, relayStylePagination } from '@apollo/client/utilities'
 import { onError } from '@apollo/client/link/error'
 import { CombinedGraphQLErrors } from '@apollo/client/errors'
+import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink'
 import { RefreshTokenDocument } from '@/lib/graphql/generated/graphql'
+import { getActionCableConsumer } from '@/lib/apollo/actionCableConsumer'
 import { useAuthStore } from '@/lib/stores/authStore'
 
 const httpLink = new HttpLink({
@@ -42,10 +45,11 @@ const errorLink = onError(({ error, operation, forward }) => {
   if (!CombinedGraphQLErrors.is(error)) return
 
   for (const err of error.errors) {
+    const code = err.extensions?.code
     if (
-      err.extensions?.code === 'UNAUTHORIZED' ||
-      err.message?.toLowerCase().includes('unauthorized') ||
-      err.message?.toLowerCase().includes('not authenticated')
+      code === 'AUTHENTICATION_ERROR' ||
+      code === 'UNAUTHORIZED' ||
+      err.message?.toLowerCase().includes('authentication required')
     ) {
       if (isRefreshing) {
         return new Observable((observer) => {
@@ -93,16 +97,31 @@ const errorLink = onError(({ error, operation, forward }) => {
   }
 })
 
+const actionCableLink = new ActionCableLink({
+  cable: getActionCableConsumer(),
+})
+
+const splitLink = split(
+  ({ query }) => {
+    const def = getMainDefinition(query)
+    return def.kind === 'OperationDefinition' && def.operation === 'subscription'
+  },
+  actionCableLink,
+  httpLink,
+)
+
 export const apolloClient = new ApolloClient({
-  link: from([errorLink, authLink, httpLink]),
+  link: from([errorLink, authLink, splitLink]),
   cache: new InMemoryCache({
     typePolicies: {
+      User: { merge: true },
+      Tweet: { merge: true },
       Query: {
         fields: {
           timeline: relayStylePagination(),
           publicTimeline: relayStylePagination(),
           userTweets: relayStylePagination(['uuid']),
-          likedTweets: relayStylePagination(['uuid']),
+          likedTweets: relayStylePagination(),
           followers: relayStylePagination(['uuid']),
           following: relayStylePagination(['uuid']),
           searchUsers: relayStylePagination(['query']),

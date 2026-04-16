@@ -1,0 +1,15 @@
+subscription TweetAdded {
+  tweetAdded {
+    id
+    content
+    createdAt
+    likesCount
+    isLikedByMe
+    author {
+      id
+      username
+      displayName
+      isFollowedByMe
+    }
+  }
+}

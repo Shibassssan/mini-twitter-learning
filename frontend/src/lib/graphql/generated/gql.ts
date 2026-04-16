@@ -30,6 +30,8 @@ type Documents = {
     "mutation SignOut {\n  signOut\n}": typeof types.SignOutDocument,
     "mutation SignUp($username: String!, $displayName: String!, $email: String!, $password: String!) {\n  signUp(\n    username: $username\n    displayName: $displayName\n    email: $email\n    password: $password\n  ) {\n    accessToken\n    user {\n      id\n      username\n      displayName\n    }\n  }\n}": typeof types.SignUpDocument,
     "query Timeline($first: Int, $after: String) {\n  timeline(first: $first, after: $after) {\n    edges {\n      node {\n        id\n        content\n        createdAt\n        likesCount\n        isLikedByMe\n        author {\n          id\n          username\n          displayName\n        }\n      }\n      cursor\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}": typeof types.TimelineDocument,
+    "subscription TweetAdded {\n  tweetAdded {\n    id\n    content\n    createdAt\n    likesCount\n    isLikedByMe\n    author {\n      id\n      username\n      displayName\n      isFollowedByMe\n    }\n  }\n}": typeof types.TweetAddedDocument,
+    "subscription TweetLikeUpdated($tweetId: ID!) {\n  tweetLikeUpdated(tweetId: $tweetId) {\n    id\n    likesCount\n    isLikedByMe\n  }\n}": typeof types.TweetLikeUpdatedDocument,
     "mutation UnfollowUser($userUuid: ID!) {\n  unfollowUser(userUuid: $userUuid) {\n    id\n    username\n    displayName\n    isFollowedByMe\n    followersCount\n    followingCount\n  }\n}": typeof types.UnfollowUserDocument,
     "mutation UnlikeTweet($tweetUuid: ID!) {\n  unlikeTweet(tweetUuid: $tweetUuid) {\n    id\n    likesCount\n    isLikedByMe\n  }\n}": typeof types.UnlikeTweetDocument,
     "mutation UpdateAvatar($avatar: Upload!) {\n  updateAvatar(avatar: $avatar) {\n    id\n    avatarUrl\n  }\n}": typeof types.UpdateAvatarDocument,
@@ -54,6 +56,8 @@ const documents: Documents = {
     "mutation SignOut {\n  signOut\n}": types.SignOutDocument,
     "mutation SignUp($username: String!, $displayName: String!, $email: String!, $password: String!) {\n  signUp(\n    username: $username\n    displayName: $displayName\n    email: $email\n    password: $password\n  ) {\n    accessToken\n    user {\n      id\n      username\n      displayName\n    }\n  }\n}": types.SignUpDocument,
     "query Timeline($first: Int, $after: String) {\n  timeline(first: $first, after: $after) {\n    edges {\n      node {\n        id\n        content\n        createdAt\n        likesCount\n        isLikedByMe\n        author {\n          id\n          username\n          displayName\n        }\n      }\n      cursor\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}": types.TimelineDocument,
+    "subscription TweetAdded {\n  tweetAdded {\n    id\n    content\n    createdAt\n    likesCount\n    isLikedByMe\n    author {\n      id\n      username\n      displayName\n      isFollowedByMe\n    }\n  }\n}": types.TweetAddedDocument,
+    "subscription TweetLikeUpdated($tweetId: ID!) {\n  tweetLikeUpdated(tweetId: $tweetId) {\n    id\n    likesCount\n    isLikedByMe\n  }\n}": types.TweetLikeUpdatedDocument,
     "mutation UnfollowUser($userUuid: ID!) {\n  unfollowUser(userUuid: $userUuid) {\n    id\n    username\n    displayName\n    isFollowedByMe\n    followersCount\n    followingCount\n  }\n}": types.UnfollowUserDocument,
     "mutation UnlikeTweet($tweetUuid: ID!) {\n  unlikeTweet(tweetUuid: $tweetUuid) {\n    id\n    likesCount\n    isLikedByMe\n  }\n}": types.UnlikeTweetDocument,
     "mutation UpdateAvatar($avatar: Upload!) {\n  updateAvatar(avatar: $avatar) {\n    id\n    avatarUrl\n  }\n}": types.UpdateAvatarDocument,
@@ -140,6 +144,14 @@ export function graphql(source: "mutation SignUp($username: String!, $displayNam
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "query Timeline($first: Int, $after: String) {\n  timeline(first: $first, after: $after) {\n    edges {\n      node {\n        id\n        content\n        createdAt\n        likesCount\n        isLikedByMe\n        author {\n          id\n          username\n          displayName\n        }\n      }\n      cursor\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}"): (typeof documents)["query Timeline($first: Int, $after: String) {\n  timeline(first: $first, after: $after) {\n    edges {\n      node {\n        id\n        content\n        createdAt\n        likesCount\n        isLikedByMe\n        author {\n          id\n          username\n          displayName\n        }\n      }\n      cursor\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "subscription TweetAdded {\n  tweetAdded {\n    id\n    content\n    createdAt\n    likesCount\n    isLikedByMe\n    author {\n      id\n      username\n      displayName\n      isFollowedByMe\n    }\n  }\n}"): (typeof documents)["subscription TweetAdded {\n  tweetAdded {\n    id\n    content\n    createdAt\n    likesCount\n    isLikedByMe\n    author {\n      id\n      username\n      displayName\n      isFollowedByMe\n    }\n  }\n}"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "subscription TweetLikeUpdated($tweetId: ID!) {\n  tweetLikeUpdated(tweetId: $tweetId) {\n    id\n    likesCount\n    isLikedByMe\n  }\n}"): (typeof documents)["subscription TweetLikeUpdated($tweetId: ID!) {\n  tweetLikeUpdated(tweetId: $tweetId) {\n    id\n    likesCount\n    isLikedByMe\n  }\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

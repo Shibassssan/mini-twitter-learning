@@ -1,0 +1,7 @@
+subscription TweetLikeUpdated($tweetId: ID!) {
+  tweetLikeUpdated(tweetId: $tweetId) {
+    id
+    likesCount
+    isLikedByMe
+  }
+}
