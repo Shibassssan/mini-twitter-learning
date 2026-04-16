@@ -11,13 +11,12 @@ module Resolvers
       authenticate!
 
       user = User.find_by!(uuid: uuid)
-      relation = User
-        .with_attached_avatar
-        .joins("INNER JOIN follows ON follows.followed_id = users.id")
-        .where(follows: { follower_id: user.id })
-        .select("users.*, follows.created_at AS cursor_created_at, follows.id AS cursor_id")
-
-      paginate_relation(relation, first: first, after: after, paging_by: :follows)
+      paginate_relation(
+        user.following_users_cursor_relation,
+        first: first,
+        after: after,
+        paging_by: :follows
+      )
     rescue GraphQL::ExecutionError
       raise
     rescue ActiveRecord::RecordNotFound

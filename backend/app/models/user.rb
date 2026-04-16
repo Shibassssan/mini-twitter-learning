@@ -29,4 +29,27 @@ class User < ApplicationRecord
   def following?(other_user)
     active_follows.exists?(followed_id: other_user.id)
   end
+
+  # GraphQL の follows カーソルページング用（follows.created_at / follows.id）
+  def following_users_cursor_relation
+    self.class
+      .with_attached_avatar
+      .joins("INNER JOIN follows ON follows.followed_id = users.id")
+      .where(follows: { follower_id: id })
+      .select(cursor_select_sql)
+  end
+
+  def followers_users_cursor_relation
+    self.class
+      .with_attached_avatar
+      .joins("INNER JOIN follows ON follows.follower_id = users.id")
+      .where(follows: { followed_id: id })
+      .select(cursor_select_sql)
+  end
+
+  private
+
+  def cursor_select_sql
+    "users.*, follows.created_at AS cursor_created_at, follows.id AS cursor_id"
+  end
 end
