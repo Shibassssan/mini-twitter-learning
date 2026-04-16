@@ -7,22 +7,18 @@ module Mutations
     type Boolean
 
     def resolve(uuid:)
-      user = context[:current_user] || raise_unauthenticated!
+      user = authenticate!
 
       ActiveRecord::Base.transaction do
-        tweet = Tweet.lock.find_by!(uuid: uuid)
+        tweet = Tweet.find_by!(uuid: uuid)
         raise_authorization_error! unless tweet.user_id == user.id
 
         tweet.destroy!
       end
 
       true
-    rescue GraphQL::ExecutionError
-      raise
     rescue ActiveRecord::RecordNotFound
       raise_not_found!("Tweet not found")
-    rescue StandardError
-      raise_validation_error!("Failed to delete tweet")
     end
   end
 end

@@ -1,5 +1,31 @@
 class AuthService
+  class RegistrationError < StandardError; end
+  class AuthenticationError < StandardError; end
+
   class << self
+    def register(username:, email:, password:, display_name:)
+      user = nil
+      tokens = nil
+
+      ActiveRecord::Base.transaction do
+        user = User.create!(username: username, display_name: display_name)
+        user.create_credential!(email: email, password: password)
+        tokens = issue_tokens_for(user)
+      end
+
+      { user: user, tokens: tokens }
+    rescue ActiveRecord::RecordInvalid => e
+      raise RegistrationError, extract_registration_message(e)
+    end
+
+    def authenticate(email:, password:)
+      credential = Credential.find_by(email: email)
+      raise AuthenticationError, "Invalid email or password" unless credential&.authenticate(password)
+
+      tokens = issue_tokens_for(credential.user)
+      { user: credential.user, tokens: tokens }
+    end
+
     def issue_tokens_for(user)
       session = JWTSessions::Session.new(payload: session_payload(user))
       session.login
@@ -35,6 +61,15 @@ class AuthService
 
       value = JWTSessions.refresh_cookie_same_site
       value.present? ? value.downcase.to_sym : :lax
+    end
+
+    def extract_registration_message(error)
+      record = error.record
+      if record.errors.of_kind?(:email, :taken) || record.errors.of_kind?(:username, :taken)
+        "Unable to create account. Please verify your information."
+      else
+        record.errors.full_messages.join(", ")
+      end
     end
   end
 end

@@ -7,23 +7,28 @@ module Mutations
     type Types::TweetType
 
     def resolve(tweet_uuid:)
-      user = context[:current_user] || raise_unauthenticated!
+      user = authenticate!
       tweet = Tweet.find_by!(uuid: tweet_uuid)
 
-      ActiveRecord::Base.transaction do
+      tweet = ActiveRecord::Base.transaction do
         Like.create!(user: user, tweet: tweet)
         tweet.reload
       end
-    rescue GraphQL::ExecutionError
-      raise
+
+      MiniTwitterSchema.subscriptions.trigger(
+        :tweet_like_updated,
+        { tweet_id: tweet.uuid },
+        tweet,
+        scope: tweet.uuid
+      )
+
+      tweet
     rescue ActiveRecord::RecordNotFound
       raise_not_found!("Tweet not found")
     rescue ActiveRecord::RecordNotUnique
       raise_validation_error!("Already liked this tweet")
     rescue ActiveRecord::RecordInvalid => e
       raise_validation_error!(e.record.errors.full_messages.join(", "))
-    rescue StandardError
-      raise_validation_error!("Failed to like tweet")
     end
   end
 end

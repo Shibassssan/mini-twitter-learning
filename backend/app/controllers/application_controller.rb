@@ -4,6 +4,12 @@ class ApplicationController < ActionController::API
 
   rescue_from JWTSessions::Errors::Unauthorized, with: :render_authentication_error
 
+  # GraphQL RefreshToken mutation 用（private の authorize_by_refresh_cookie! などを隠蔽）
+  def verify_refresh_for_graphql!
+    authorize_by_refresh_cookie!
+    { payload: payload.to_h, token: found_token }
+  end
+
   private
 
   def current_user

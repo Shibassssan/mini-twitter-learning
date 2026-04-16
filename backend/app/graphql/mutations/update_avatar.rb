@@ -7,7 +7,7 @@ module Mutations
     type Types::UserType
 
     def resolve(avatar:)
-      user = context[:current_user] || raise_unauthenticated!
+      user = authenticate!
 
       validate_avatar!(avatar)
 
@@ -19,14 +19,8 @@ module Mutations
         )
         user
       end
-    rescue GraphQL::ExecutionError
-      raise
-    rescue ActiveRecord::RecordInvalid => e
-      raise_validation_error!(e.record.errors.full_messages.join(", "))
     rescue ActiveSupport::MessageVerifier::InvalidSignature
       raise_validation_error!("Invalid avatar file")
-    rescue StandardError
-      raise_validation_error!("Failed to update avatar")
     end
 
     private
@@ -35,7 +29,11 @@ module Mutations
     ALLOWED_CONTENT_TYPES = %w[image/jpeg image/png image/webp].freeze
 
     def validate_avatar!(avatar)
-      unless ALLOWED_CONTENT_TYPES.include?(avatar.content_type)
+      io = avatar.respond_to?(:tempfile) && avatar.tempfile ? avatar.tempfile : avatar
+      io.rewind if io.respond_to?(:rewind)
+      detected_type = Marcel::MimeType.for(io, name: avatar.original_filename)
+      io.rewind if io.respond_to?(:rewind)
+      unless ALLOWED_CONTENT_TYPES.include?(detected_type)
         raise_validation_error!("Avatar must be JPEG, PNG, or WebP")
       end
 

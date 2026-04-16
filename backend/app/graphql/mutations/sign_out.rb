@@ -5,7 +5,7 @@ module Mutations
     type Boolean
 
     def resolve
-      raise_unauthenticated! unless context[:current_user]
+      authenticate!
 
       refresh_token = context[:cookies][JWTSessions.refresh_cookie]
       raise_unauthenticated! if refresh_token.blank?

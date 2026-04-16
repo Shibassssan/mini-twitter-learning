@@ -8,41 +8,17 @@ module Mutations
     type Types::AuthPayloadType
 
     def resolve(email:, password:)
-      credential = Credential.find_by(email: email)
+      result = AuthService.authenticate(email: email, password: password)
 
-      unless credential&.authenticate(password)
-        raise GraphQL::ExecutionError.new(
-          "Invalid email or password",
-          extensions: { code: "AUTHENTICATION_ERROR" }
-        )
-      end
+      set_refresh_cookie!(result[:tokens][:refresh])
 
-      tokens = AuthService.issue_tokens_for(credential.user)
-      set_refresh_cookie!(tokens[:refresh])
-
-      {
-        access_token: tokens[:access],
-        user: credential.user
-      }
-    rescue GraphQL::ExecutionError
-      raise
-    rescue StandardError
+      { access_token: result[:tokens][:access], user: result[:user] }
+    rescue AuthService::AuthenticationError => e
       raise GraphQL::ExecutionError.new(
-        "Failed to create session",
-        extensions: { code: "INTERNAL_SERVER_ERROR" }
+        e.message,
+        extensions: { code: "AUTHENTICATION_ERROR" }
       )
     end
 
-    private
-
-    def set_refresh_cookie!(refresh_token)
-      response = context[:response]
-      raise GraphQL::ExecutionError, "Response context is missing" unless response
-
-      response.set_cookie(
-        JWTSessions.refresh_cookie,
-        AuthService.refresh_cookie_options(refresh_token)
-      )
-    end
   end
 end

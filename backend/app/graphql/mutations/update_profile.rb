@@ -8,7 +8,7 @@ module Mutations
     type Types::UserType
 
     def resolve(**args)
-      user = context[:current_user] || raise_unauthenticated!
+      user = authenticate!
 
       permitted = {}
       permitted[:display_name] = args[:display_name] if args.key?(:display_name)
@@ -20,12 +20,8 @@ module Mutations
         user.update!(permitted)
         user
       end
-    rescue GraphQL::ExecutionError
-      raise
     rescue ActiveRecord::RecordInvalid => e
       raise_validation_error!(e.record.errors.full_messages.join(", "))
-    rescue StandardError
-      raise_validation_error!("Failed to update profile")
     end
   end
 end

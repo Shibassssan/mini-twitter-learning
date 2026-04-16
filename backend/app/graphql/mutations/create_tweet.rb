@@ -7,20 +7,18 @@ module Mutations
     type Types::TweetType
 
     def resolve(content:)
-      user = context[:current_user] || raise_unauthenticated!
+      user = authenticate!
 
-      ActiveRecord::Base.transaction do
+      tweet = ActiveRecord::Base.transaction do
         Tweet.create!(
           user: user,
           content: content.strip
         )
       end
-    rescue GraphQL::ExecutionError
-      raise
-    rescue ActiveRecord::RecordInvalid => e
-      raise_validation_error!(e.record.errors.full_messages.join(", "))
-    rescue StandardError
-      raise_validation_error!("Failed to create tweet")
+
+      MiniTwitterSchema.subscriptions.trigger(:tweet_added, {}, tweet)
+
+      tweet
     end
   end
 end

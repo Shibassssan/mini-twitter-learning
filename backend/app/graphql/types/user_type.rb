@@ -14,7 +14,8 @@ module Types
     def avatar_url
       return nil unless object.avatar.attached?
 
-      Rails.application.routes.url_helpers.rails_storage_proxy_path(object.avatar, only_path: true)
+      variant = object.avatar.variant(resize_to_fill: [ 200, 200 ])
+      Rails.application.routes.url_helpers.rails_blob_path(variant, only_path: true)
     end
 
     def is_followed_by_me

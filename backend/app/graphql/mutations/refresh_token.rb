@@ -8,10 +8,9 @@ module Mutations
       controller = context[:controller]
       raise GraphQL::ExecutionError, "Controller context is missing" unless controller
 
-      controller.send(:authorize_by_refresh_cookie!)
-
-      refresh_payload = controller.send(:payload).to_h
-      refresh_token = controller.send(:found_token)
+      session = controller.verify_refresh_for_graphql!
+      refresh_payload = session[:payload]
+      refresh_token = session[:token]
       user = User.find(refresh_payload.fetch("user_id"))
       tokens = AuthService.refresh_access_token!(refresh_token, payload: refresh_payload)
 
