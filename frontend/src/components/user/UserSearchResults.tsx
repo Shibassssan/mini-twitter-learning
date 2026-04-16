@@ -1,4 +1,5 @@
 import { useQuery } from '@apollo/client/react'
+import { useMemo, useCallback } from 'react'
 import { SearchUsersDocument } from '@/lib/graphql/generated/graphql'
 import { UserCard } from '@/components/user/UserCard'
 import { UserCardSkeletonList } from '@/components/ui/UserCardSkeleton'
@@ -12,18 +13,27 @@ interface UserSearchResultsProps {
 }
 
 export function UserSearchResults({ query }: UserSearchResultsProps) {
-  const { data, loading, error, fetchMore } = useQuery(SearchUsersDocument, {
+  const { data, loading, error, fetchMore, refetch } = useQuery(SearchUsersDocument, {
     variables: { query, first: PAGE_SIZE },
     skip: !query,
     notifyOnNetworkStatusChange: true,
   })
 
-  if (error) return <ErrorMessage message={error.message} onRetry={() => window.location.reload()} />
-  if (loading && !data) return <UserCardSkeletonList count={3} />
-
-  const edges = data?.searchUsers?.edges ?? []
   const pageInfo = data?.searchUsers?.pageInfo
-  const users = edges.map((e) => e.node)
+  const endCursor = pageInfo?.endCursor
+
+  const users = useMemo(
+    () => (data?.searchUsers?.edges ?? []).map((e) => e.node),
+    [data],
+  )
+
+  const onLoadMore = useCallback(
+    () => fetchMore({ variables: { after: endCursor } }),
+    [fetchMore, endCursor],
+  )
+
+  if (error) return <ErrorMessage message={error.message} onRetry={refetch} />
+  if (loading && !data) return <UserCardSkeletonList count={3} />
 
   return (
     <InfiniteScrollList
@@ -31,7 +41,7 @@ export function UserSearchResults({ query }: UserSearchResultsProps) {
       renderItem={(user) => <UserCard key={user.id} user={user} />}
       hasNextPage={pageInfo?.hasNextPage ?? false}
       loading={loading}
-      onLoadMore={() => fetchMore({ variables: { after: pageInfo?.endCursor } })}
+      onLoadMore={onLoadMore}
       emptyMessage="ユーザーが見つかりませんでした"
     />
   )

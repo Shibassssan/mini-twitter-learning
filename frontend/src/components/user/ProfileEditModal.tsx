@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useMutation } from '@apollo/client/react'
-import { Modal, Button, useOverlayState } from '@heroui/react'
+import { Modal, Button, TextField, Label, Input, TextArea, Description, useOverlayState } from '@heroui/react'
 import { useUiStore } from '@/lib/stores/uiStore'
 import { UpdateProfileDocument } from '@/lib/graphql/generated/graphql'
 
@@ -19,12 +19,6 @@ export function ProfileEditModal({ user }: ProfileEditModalProps) {
     isOpen: isProfileEditOpen,
     onOpenChange: setIsProfileEditOpen,
   })
-
-  useEffect(() => {
-    if (isProfileEditOpen !== state.isOpen) {
-      state.setOpen(isProfileEditOpen)
-    }
-  }, [isProfileEditOpen, state])
 
   useEffect(() => {
     if (isProfileEditOpen) {
@@ -55,35 +49,27 @@ export function ProfileEditModal({ user }: ProfileEditModalProps) {
           <Modal.Header>プロフィールを編集</Modal.Header>
           <form onSubmit={handleSubmit}>
             <Modal.Body className="space-y-4">
-              <div>
-                <label htmlFor="profile-displayName" className="block text-sm font-medium mb-1">
-                  表示名
-                </label>
-                <input
-                  id="profile-displayName"
-                  type="text"
+              <TextField name="displayName">
+                <Label>表示名</Label>
+                <Input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   maxLength={50}
-                  className="w-full rounded-lg border border-default-300 bg-transparent px-3 py-2 text-sm outline-none focus:border-primary transition-colors"
+                  fullWidth
                 />
-              </div>
-              <div>
-                <label htmlFor="profile-bio" className="block text-sm font-medium mb-1">
-                  自己紹介
-                </label>
-                <textarea
-                  id="profile-bio"
+              </TextField>
+              <TextField name="bio">
+                <Label>自己紹介</Label>
+                <TextArea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   maxLength={BIO_MAX_LENGTH}
                   rows={3}
-                  className="w-full rounded-lg border border-default-300 bg-transparent px-3 py-2 text-sm outline-none focus:border-primary transition-colors resize-none"
+                  fullWidth
+                  style={{ resize: 'none' }}
                 />
-                <p className="text-xs text-default-400 text-right mt-1">
-                  {bio.length}/{BIO_MAX_LENGTH}
-                </p>
-              </div>
+                <Description className="text-right">{bio.length}/{BIO_MAX_LENGTH}</Description>
+              </TextField>
             </Modal.Body>
             <Modal.Footer>
               <Button

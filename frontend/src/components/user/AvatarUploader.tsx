@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { useMutation } from '@apollo/client/react'
+import { Avatar, Spinner } from '@heroui/react'
 import { UpdateAvatarDocument } from '@/lib/graphql/generated/graphql'
 
 interface AvatarUploaderProps {
@@ -18,6 +19,7 @@ export function AvatarUploader({
   size = 'sm',
   editable = false,
 }: AvatarUploaderProps) {
+  const fileInputId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
 
@@ -26,8 +28,6 @@ export function AvatarUploader({
     refetchQueries: ['UserByUsername', 'Me'],
   })
 
-  const dimension = size === 'lg' ? 'w-20 h-20' : 'w-10 h-10'
-  const textSize = size === 'lg' ? 'text-xl' : 'text-sm'
   const initials = displayName.slice(0, 2).toUpperCase()
   const src = preview ?? currentAvatarUrl
 
@@ -49,36 +49,50 @@ export function AvatarUploader({
     e.target.value = ''
   }
 
+  const avatarSize = size === 'lg' ? 'lg' as const : 'md' as const
+
+  const avatarInner = (
+    <>
+      <Avatar
+        size={avatarSize}
+        color="accent"
+        className={size === 'lg' ? 'size-20 text-xl' : ''}
+      >
+        <Avatar.Image src={src ?? undefined} alt={displayName} />
+        <Avatar.Fallback>{initials}</Avatar.Fallback>
+      </Avatar>
+
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full">
+          <Spinner size="sm" color="current" className="text-white" />
+        </div>
+      )}
+    </>
+  )
+
   return (
     <div className="relative">
-      <button
-        type="button"
-        onClick={() => editable && inputRef.current?.click()}
-        disabled={!editable || loading}
-        className={`${dimension} rounded-full overflow-hidden flex items-center justify-center bg-primary text-white font-bold ${textSize} shrink-0 ${
-          editable ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'cursor-default'
-        }`}
-      >
-        {src ? (
-          <img src={src} alt={displayName} className="w-full h-full object-cover" />
-        ) : (
-          initials
-        )}
-
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full">
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
-      </button>
+      {editable ? (
+        <label
+          htmlFor={fileInputId}
+          className={`relative block ${size === 'lg' ? 'size-20' : ''} ${
+            loading ? 'pointer-events-none opacity-80' : 'cursor-pointer hover:opacity-80'
+          } transition-opacity`}
+        >
+          {avatarInner}
+        </label>
+      ) : (
+        <div className={`relative ${size === 'lg' ? 'size-20' : ''}`}>{avatarInner}</div>
+      )}
 
       {editable && (
         <input
+          id={fileInputId}
           ref={inputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           onChange={handleFileChange}
-          className="hidden"
+          className="sr-only"
         />
       )}
     </div>

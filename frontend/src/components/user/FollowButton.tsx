@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { memo } from 'react'
 import { useMutation } from '@apollo/client/react'
+import { Button } from '@heroui/react'
 import { FollowUserDocument, UnfollowUserDocument } from '@/lib/graphql/generated/graphql'
 import { useAuthStore } from '@/lib/stores/authStore'
 
@@ -7,11 +8,24 @@ interface FollowButtonProps {
   userId: string
   isFollowedByMe: boolean
   username: string
+  displayName?: string
+  followersCount?: number
+  followingCount?: number
 }
 
-export function FollowButton({ userId, isFollowedByMe, username }: FollowButtonProps) {
+export const FollowButton = memo(function FollowButton({
+  userId,
+  isFollowedByMe,
+  username,
+  displayName,
+  followersCount,
+  followingCount,
+}: FollowButtonProps) {
   const { user } = useAuthStore()
-  const [hovering, setHovering] = useState(false)
+
+  const name = displayName ?? username
+  const followers = followersCount ?? 0
+  const following = followingCount ?? 0
 
   const [followUser, { loading: followLoading }] = useMutation(FollowUserDocument, {
     variables: { userUuid: userId },
@@ -20,10 +34,10 @@ export function FollowButton({ userId, isFollowedByMe, username }: FollowButtonP
         __typename: 'User',
         id: userId,
         username,
-        displayName: '',
+        displayName: name,
         isFollowedByMe: true,
-        followersCount: 0,
-        followingCount: 0,
+        followersCount: followers + 1,
+        followingCount: following,
       },
     },
   })
@@ -35,10 +49,10 @@ export function FollowButton({ userId, isFollowedByMe, username }: FollowButtonP
         __typename: 'User',
         id: userId,
         username,
-        displayName: '',
+        displayName: name,
         isFollowedByMe: false,
-        followersCount: 0,
-        followingCount: 0,
+        followersCount: Math.max(0, followers - 1),
+        followingCount: following,
       },
     },
   })
@@ -47,45 +61,29 @@ export function FollowButton({ userId, isFollowedByMe, username }: FollowButtonP
 
   const loading = followLoading || unfollowLoading
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (loading) return
-    if (isFollowedByMe) {
-      unfollowUser()
-    } else {
-      followUser()
-    }
-  }
-
   if (isFollowedByMe) {
-    const showUnfollow = hovering
     return (
-      <button
-        type="button"
-        onClick={handleClick}
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}
-        disabled={loading}
-        className={`rounded-full px-4 py-1.5 text-sm font-bold border transition-colors ${
-          showUnfollow
-            ? 'border-danger/40 text-danger bg-danger/10'
-            : 'border-default-300 text-foreground'
-        } disabled:opacity-50`}
+      <Button
+        variant="outline"
+        size="sm"
+        isDisabled={loading}
+        onPress={() => unfollowUser()}
+        className="group rounded-full hover:border-danger/40 hover:text-danger hover:bg-danger/10"
       >
-        {showUnfollow ? 'フォロー解除' : 'フォロー中'}
-      </button>
+        <span className="group-hover:hidden">フォロー中</span>
+        <span className="hidden group-hover:inline">フォロー解除</span>
+      </Button>
     )
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={loading}
-      className="rounded-full px-4 py-1.5 text-sm font-bold bg-foreground text-background transition-opacity disabled:opacity-50"
+    <Button
+      size="sm"
+      isDisabled={loading}
+      onPress={() => followUser()}
+      className="rounded-full bg-foreground text-background"
     >
       フォローする
-    </button>
+    </Button>
   )
-}
+})

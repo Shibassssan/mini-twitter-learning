@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
+import { Button } from '@heroui/react'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { useUiStore } from '@/lib/stores/uiStore'
 import { FollowButton } from '@/components/user/FollowButton'
@@ -36,18 +37,22 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
 
           <div className="mt-3">
             {isOwnProfile ? (
-              <button
-                type="button"
-                onClick={() => setIsProfileEditOpen(true)}
-                className="rounded-full px-4 py-1.5 text-sm font-bold border border-default-300 text-foreground hover:bg-default-100 transition-colors"
+              <Button
+                variant="outline"
+                size="sm"
+                onPress={() => setIsProfileEditOpen(true)}
+                className="rounded-full"
               >
                 プロフィールを編集
-              </button>
+              </Button>
             ) : (
               <FollowButton
                 userId={user.id}
                 isFollowedByMe={user.isFollowedByMe}
                 username={user.username}
+                displayName={user.displayName}
+                followersCount={user.followersCount}
+                followingCount={user.followingCount}
               />
             )}
           </div>

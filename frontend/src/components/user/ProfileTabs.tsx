@@ -1,3 +1,4 @@
+import { Tabs } from '@heroui/react'
 import { useUiStore } from '@/lib/stores/uiStore'
 import { UserTweetsList } from '@/components/tweet/UserTweetsList'
 import { LikedTweetsList } from '@/components/tweet/LikedTweetsList'
@@ -11,39 +12,29 @@ export function ProfileTabs({ userId, isOwnProfile }: ProfileTabsProps) {
   const { activeProfileTab, setActiveProfileTab } = useUiStore()
 
   return (
-    <>
-      <div className="flex border-b border-divider mt-2">
-        <button
-          type="button"
-          onClick={() => setActiveProfileTab('tweets')}
-          className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-            activeProfileTab === 'tweets'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-default-500'
-          }`}
-        >
-          ツイート
-        </button>
-        {isOwnProfile && (
-          <button
-            type="button"
-            onClick={() => setActiveProfileTab('likes')}
-            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeProfileTab === 'likes'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-default-500'
-            }`}
-          >
-            いいね
-          </button>
-        )}
-      </div>
-
-      {activeProfileTab === 'tweets' || !isOwnProfile ? (
+    <Tabs
+      variant="secondary"
+      selectedKey={activeProfileTab}
+      onSelectionChange={(key) => {
+        const id = String(key)
+        if (id === 'tweets' || id === 'likes') setActiveProfileTab(id)
+      }}
+      className="mt-2"
+    >
+      <Tabs.ListContainer>
+        <Tabs.List aria-label="プロフィールタブ">
+          <Tabs.Tab id="tweets">ツイート</Tabs.Tab>
+          {isOwnProfile && <Tabs.Tab id="likes">いいね</Tabs.Tab>}
+        </Tabs.List>
+      </Tabs.ListContainer>
+      <Tabs.Panel id="tweets">
         <UserTweetsList userId={userId} />
-      ) : (
-        <LikedTweetsList />
+      </Tabs.Panel>
+      {isOwnProfile && (
+        <Tabs.Panel id="likes">
+          <LikedTweetsList />
+        </Tabs.Panel>
       )}
-    </>
+    </Tabs>
   )
 }

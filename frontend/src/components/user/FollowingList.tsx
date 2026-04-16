@@ -1,3 +1,4 @@
+import { useMemo, useCallback } from 'react'
 import { useQuery } from '@apollo/client/react'
 import { FollowingDocument } from '@/lib/graphql/generated/graphql'
 import { UserCard } from '@/components/user/UserCard'
@@ -17,12 +18,19 @@ export function FollowingList({ userUuid }: FollowingListProps) {
     notifyOnNetworkStatusChange: true,
   })
 
+  const pageInfo = data?.following?.pageInfo
+  const endCursor = pageInfo?.endCursor
+  const users = useMemo(
+    () => data?.following?.edges?.map((e) => e.node) ?? [],
+    [data],
+  )
+  const onLoadMore = useCallback(
+    () => fetchMore({ variables: { after: endCursor } }),
+    [fetchMore, endCursor],
+  )
+
   if (error) return <ErrorMessage message={error.message} onRetry={() => refetch()} />
   if (loading && !data) return <UserCardSkeletonList />
-
-  const edges = data?.following?.edges ?? []
-  const pageInfo = data?.following?.pageInfo
-  const users = edges.map((e) => e.node)
 
   return (
     <InfiniteScrollList
@@ -30,7 +38,7 @@ export function FollowingList({ userUuid }: FollowingListProps) {
       renderItem={(user) => <UserCard key={user.id} user={user} />}
       hasNextPage={pageInfo?.hasNextPage ?? false}
       loading={loading}
-      onLoadMore={() => fetchMore({ variables: { after: pageInfo?.endCursor } })}
+      onLoadMore={onLoadMore}
       emptyMessage="フォロー中のユーザーはいません"
     />
   )
