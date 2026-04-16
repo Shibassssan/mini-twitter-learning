@@ -1,5 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useMutation } from '@apollo/client/react'
+import { Button } from '@heroui/react'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { useUiStore } from '@/lib/stores/uiStore'
 import { SignOutDocument } from '@/lib/graphql/generated/graphql'
@@ -63,29 +64,30 @@ export function Sidebar() {
           </Link>
         )}
 
-        <button
-          type="button"
-          onClick={() => setIsTweetModalOpen(true)}
-          className="mt-4 flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-full bg-primary text-white font-bold hover:bg-primary/90 transition-colors"
+        <Button
+          variant="primary"
+          onPress={() => setIsTweetModalOpen(true)}
+          className="mt-4 flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-full"
         >
           <svg aria-hidden="true" className="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           <span className="hidden lg:block">ツイートする</span>
-        </button>
+        </Button>
       </nav>
 
       <div className="mt-auto">
-        <button
-          type="button"
-          onClick={handleSignOut}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-full text-foreground hover:bg-default-100 transition-colors w-full"
+        <Button
+          variant="ghost"
+          onPress={handleSignOut}
+          fullWidth
+          className="flex items-center gap-3 px-3 py-2.5 rounded-full"
         >
           <svg aria-hidden="true" className="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
           <span className="hidden lg:block text-sm">ログアウト</span>
-        </button>
+        </Button>
       </div>
     </aside>
   )
