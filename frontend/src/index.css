@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "@heroui/react/styles";
 
 * {
   box-sizing: border-box;
