@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useMutation } from '@apollo/client/react'
+import { Button, TextArea, Spinner } from '@heroui/react'
 import { CreateTweetDocument } from '@/lib/graphql/generated/graphql'
 import { extractGqlErrorMessage } from '@/lib/utils/graphqlError'
 
@@ -34,13 +35,14 @@ export function TweetComposer({ onSuccess, refetchQueries }: TweetComposerProps)
 
   return (
     <form onSubmit={handleSubmit} className="p-4 border-b border-divider">
-      <textarea
+      <TextArea
+        fullWidth
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="いまどうしてる？"
         rows={3}
         maxLength={300}
-        className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-default-400"
+        style={{ resize: 'none' }}
       />
       {errorMsg && (
         <p className="text-danger text-xs mt-1">{errorMsg}</p>
@@ -49,13 +51,15 @@ export function TweetComposer({ onSuccess, refetchQueries }: TweetComposerProps)
         <span className={`text-xs ${content.length > 280 ? 'text-danger' : 'text-default-400'}`}>
           {content.length}/300
         </span>
-        <button
+        <Button
           type="submit"
-          disabled={!isValid || loading}
-          className="bg-primary text-white text-sm px-4 py-1.5 rounded-full disabled:opacity-50"
+          variant="primary"
+          size="sm"
+          isDisabled={!isValid || loading}
+          isPending={loading}
         >
-          {loading ? '投稿中...' : 'ツイート'}
-        </button>
+          {({isPending}) => isPending ? <><Spinner color="current" size="sm" />投稿中...</> : 'ツイート'}
+        </Button>
       </div>
     </form>
   )

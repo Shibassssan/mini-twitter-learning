@@ -1,5 +1,4 @@
 import { Modal, useOverlayState } from '@heroui/react'
-import { useEffect } from 'react'
 import { useUiStore } from '@/lib/stores/uiStore'
 import { TweetComposer } from './TweetComposer'
 
@@ -9,12 +8,6 @@ export function TweetComposerModal() {
     isOpen: isTweetModalOpen,
     onOpenChange: setIsTweetModalOpen,
   })
-
-  useEffect(() => {
-    if (isTweetModalOpen !== state.isOpen) {
-      state.setOpen(isTweetModalOpen)
-    }
-  }, [isTweetModalOpen, state])
 
   return (
     <Modal state={state}>
