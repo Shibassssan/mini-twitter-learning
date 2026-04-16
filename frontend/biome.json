@@ -1,5 +1,18 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
+  "files": {
+    "includes": ["src/**", "*.ts", "*.tsx", "*.js", "*.json"]
+  },
+  "overrides": [
+    {
+      "includes": ["src/lib/graphql/generated/**"],
+      "linter": { "enabled": false }
+    },
+    {
+      "includes": ["src/routeTree.gen.ts"],
+      "linter": { "enabled": false }
+    }
+  ],
   "assist": {
     "actions": {
       "source": {
