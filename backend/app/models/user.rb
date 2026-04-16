@@ -1,5 +1,9 @@
 class User < ApplicationRecord
+  NotAuthorizedToModifyTweet = Class.new(StandardError)
+
   include HasUuid
+  include AvatarUploadable
+  include TextSearchable
 
   has_one :credential, dependent: :destroy
   has_many :tweets, dependent: :destroy
@@ -28,6 +32,70 @@ class User < ApplicationRecord
 
   def following?(other_user)
     active_follows.exists?(followed_id: other_user.id)
+  end
+
+  def self.search_profiles_substring(query_string)
+    pattern = normalize_search_query!(query_string)
+    with_attached_avatar.where("username ILIKE :q OR display_name ILIKE :q", q: pattern)
+  end
+
+  def following_timeline_tweets
+    followed_ids = Follow.where(follower_id: id).select(:followed_id)
+    Tweet.where(user_id: followed_ids)
+  end
+
+  def follow!(other_user)
+    ActiveRecord::Base.transaction do
+      active_follows.create!(followed: other_user)
+      other_user.reload
+    end
+  end
+
+  def unfollow!(other_user)
+    ActiveRecord::Base.transaction do
+      active_follows.find_by!(followed: other_user).destroy!
+      other_user.reload
+    end
+  end
+
+  def like_tweet!(tweet)
+    ActiveRecord::Base.transaction do
+      likes.create!(tweet: tweet)
+      tweet.reload
+    end
+  end
+
+  def unlike_tweet!(tweet)
+    ActiveRecord::Base.transaction do
+      likes.find_by!(tweet: tweet).destroy!
+      tweet.reload
+    end
+  end
+
+  def post_tweet!(content)
+    ActiveRecord::Base.transaction do
+      tweets.create!(content: content.to_s.strip)
+    end
+  end
+
+  def destroy_tweet_by_uuid!(uuid)
+    ActiveRecord::Base.transaction do
+      tweet = Tweet.find_by!(uuid: uuid)
+      raise NotAuthorizedToModifyTweet if tweet.user_id != id
+
+      tweet.destroy!
+    end
+    true
+  end
+
+  def update_profile!(permitted)
+    permitted = permitted.symbolize_keys.slice(:display_name, :bio)
+    raise ArgumentError, "No attributes to update" if permitted.empty?
+
+    ActiveRecord::Base.transaction do
+      update!(permitted)
+    end
+    self
   end
 
   # GraphQL の follows カーソルページング用（follows.created_at / follows.id）
