@@ -18,14 +18,14 @@ RSpec.describe "GraphQL createTweet", type: :request do
   let(:user) { create(:user, username: "tweet_author") }
 
   it "creates a tweet for the current user" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     expect do
       post "/graphql", params: {
         query: query,
         variables: { content: "Hello timeline" }.to_json,
         operationName: "CreateTweet"
-      }
+      }, headers: headers
     end.to change(Tweet, :count).by(1)
 
     body = JSON.parse(response.body)
@@ -36,13 +36,13 @@ RSpec.describe "GraphQL createTweet", type: :request do
   end
 
   it "returns a validation error for blank content" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { content: "   " }.to_json,
       operationName: "CreateTweet"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -51,13 +51,13 @@ RSpec.describe "GraphQL createTweet", type: :request do
   end
 
   it "strips whitespace from content" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { content: "  Hello with spaces  " }.to_json,
       operationName: "CreateTweet"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -66,8 +66,6 @@ RSpec.describe "GraphQL createTweet", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { content: "Hello timeline" }.to_json,

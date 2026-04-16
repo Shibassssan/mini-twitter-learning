@@ -25,10 +25,7 @@ RSpec.describe "GraphQL publicTimeline", type: :request do
   end
 
   let(:user) { create(:user) }
-
-  before do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
-  end
+  let(:auth_headers) { sign_in_as(user) }
 
   it "returns tweets in reverse chronological order with pagination metadata" do
     older_tweet = create(:tweet, content: "older", created_at: 2.hours.ago, user: user)
@@ -38,7 +35,7 @@ RSpec.describe "GraphQL publicTimeline", type: :request do
       query: query,
       variables: { first: 10 }.to_json,
       operationName: "PublicTimeline"
-    }
+    }, headers: auth_headers
 
     body = JSON.parse(response.body)
     edges = body.dig("data", "publicTimeline", "edges")
@@ -59,7 +56,7 @@ RSpec.describe "GraphQL publicTimeline", type: :request do
       query: query,
       variables: { first: 2 }.to_json,
       operationName: "PublicTimeline"
-    }
+    }, headers: auth_headers
 
     first_page = JSON.parse(response.body)
     end_cursor = first_page.dig("data", "publicTimeline", "pageInfo", "endCursor")
@@ -68,7 +65,7 @@ RSpec.describe "GraphQL publicTimeline", type: :request do
       query: query,
       variables: { first: 2, after: end_cursor }.to_json,
       operationName: "PublicTimeline"
-    }
+    }, headers: auth_headers
 
     second_page = JSON.parse(response.body)
     second_page_edges = second_page.dig("data", "publicTimeline", "edges")
@@ -79,8 +76,6 @@ RSpec.describe "GraphQL publicTimeline", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { first: 10 }.to_json,

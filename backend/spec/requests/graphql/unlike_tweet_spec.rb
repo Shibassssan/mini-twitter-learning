@@ -18,7 +18,7 @@ RSpec.describe "GraphQL unlikeTweet", type: :request do
   let(:tweet) { create(:tweet) }
 
   it "unlikes a previously liked tweet" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
     create(:like, user: user, tweet: tweet)
 
     expect do
@@ -26,7 +26,7 @@ RSpec.describe "GraphQL unlikeTweet", type: :request do
         query: query,
         variables: { tweetUuid: tweet.uuid }.to_json,
         operationName: "UnlikeTweet"
-      }
+      }, headers: headers
     end.to change(Like, :count).by(-1)
 
     body = JSON.parse(response.body)
@@ -37,8 +37,6 @@ RSpec.describe "GraphQL unlikeTweet", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { tweetUuid: tweet.uuid }.to_json,
@@ -52,13 +50,13 @@ RSpec.describe "GraphQL unlikeTweet", type: :request do
   end
 
   it "returns a not found error when unliking a tweet not liked" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { tweetUuid: tweet.uuid }.to_json,
       operationName: "UnlikeTweet"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 

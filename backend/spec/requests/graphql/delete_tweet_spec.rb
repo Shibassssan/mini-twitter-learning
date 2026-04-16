@@ -14,14 +14,14 @@ RSpec.describe "GraphQL deleteTweet", type: :request do
   let!(:tweet) { create(:tweet, user: owner) }
 
   it "deletes the current user's tweet" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(owner)
+    headers = sign_in_as(owner)
 
     expect do
       post "/graphql", params: {
         query: query,
         variables: { uuid: tweet.uuid }.to_json,
         operationName: "DeleteTweet"
-      }
+      }, headers: headers
     end.to change(Tweet, :count).by(-1)
 
     body = JSON.parse(response.body)
@@ -31,13 +31,13 @@ RSpec.describe "GraphQL deleteTweet", type: :request do
   end
 
   it "returns an authorization error when deleting another user's tweet" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(other_user)
+    headers = sign_in_as(other_user)
 
     post "/graphql", params: {
       query: query,
       variables: { uuid: tweet.uuid }.to_json,
       operationName: "DeleteTweet"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -46,8 +46,6 @@ RSpec.describe "GraphQL deleteTweet", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { uuid: tweet.uuid }.to_json,
@@ -61,13 +59,13 @@ RSpec.describe "GraphQL deleteTweet", type: :request do
   end
 
   it "returns a not found error for non-existent tweet" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(owner)
+    headers = sign_in_as(owner)
 
     post "/graphql", params: {
       query: query,
       variables: { uuid: "00000000-0000-0000-0000-000000000000" }.to_json,
       operationName: "DeleteTweet"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 

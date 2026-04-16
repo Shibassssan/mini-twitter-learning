@@ -15,8 +15,6 @@ RSpec.describe "GraphQL updateAvatar", type: :request do
   let(:user) { create(:user) }
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { avatar: nil }.to_json,
@@ -36,8 +34,18 @@ RSpec.describe Mutations::UpdateAvatar, "#validate_avatar!" do
     mutation.instance_variable_set(:@context, {})
   end
 
+  def upload_double(filename:, size:, io: StringIO.new(""))
+    double(
+      "avatar",
+      content_type: "application/octet-stream",
+      size: size,
+      original_filename: filename,
+      tempfile: io
+    )
+  end
+
   it "raises VALIDATION_ERROR for disallowed content type" do
-    avatar = double("avatar", content_type: "application/pdf", size: 1.megabyte)
+    avatar = upload_double(filename: "doc.pdf", size: 1.megabyte, io: StringIO.new("%PDF-1.4\n"))
 
     expect {
       mutation.send(:validate_avatar!, avatar)
@@ -48,7 +56,7 @@ RSpec.describe Mutations::UpdateAvatar, "#validate_avatar!" do
   end
 
   it "raises VALIDATION_ERROR for oversized file" do
-    avatar = double("avatar", content_type: "image/jpeg", size: 3.megabytes)
+    avatar = upload_double(filename: "big.jpg", size: 3.megabytes)
 
     expect {
       mutation.send(:validate_avatar!, avatar)
@@ -59,7 +67,11 @@ RSpec.describe Mutations::UpdateAvatar, "#validate_avatar!" do
   end
 
   it "rejects GIF files" do
-    avatar = double("avatar", content_type: "image/gif", size: 500.kilobytes)
+    avatar = upload_double(
+      filename: "anim.gif",
+      size: 500.kilobytes,
+      io: StringIO.new("GIF89a\x00\x00\x00")
+    )
 
     expect {
       mutation.send(:validate_avatar!, avatar)
@@ -67,7 +79,7 @@ RSpec.describe Mutations::UpdateAvatar, "#validate_avatar!" do
   end
 
   it "rejects file at exactly 2MB boundary" do
-    avatar = double("avatar", content_type: "image/jpeg", size: 2.megabytes + 1)
+    avatar = upload_double(filename: "edge.jpg", size: 2.megabytes + 1)
 
     expect {
       mutation.send(:validate_avatar!, avatar)
@@ -75,19 +87,19 @@ RSpec.describe Mutations::UpdateAvatar, "#validate_avatar!" do
   end
 
   it "accepts valid JPEG under 2MB" do
-    avatar = double("avatar", content_type: "image/jpeg", size: 500.kilobytes)
+    avatar = upload_double(filename: "photo.jpg", size: 500.kilobytes)
 
     expect { mutation.send(:validate_avatar!, avatar) }.not_to raise_error
   end
 
   it "accepts valid PNG under 2MB" do
-    avatar = double("avatar", content_type: "image/png", size: 1.megabyte)
+    avatar = upload_double(filename: "pic.png", size: 1.megabyte)
 
     expect { mutation.send(:validate_avatar!, avatar) }.not_to raise_error
   end
 
   it "accepts valid WebP under 2MB" do
-    avatar = double("avatar", content_type: "image/webp", size: 100.kilobytes)
+    avatar = upload_double(filename: "pic.webp", size: 100.kilobytes)
 
     expect { mutation.send(:validate_avatar!, avatar) }.not_to raise_error
   end

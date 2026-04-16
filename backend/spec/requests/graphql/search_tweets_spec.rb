@@ -34,13 +34,13 @@ RSpec.describe "GraphQL searchTweets", type: :request do
   end
 
   it "finds tweets by content partial match" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { query: "Ruby", first: 20 }.to_json,
       operationName: "SearchTweets"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -52,13 +52,13 @@ RSpec.describe "GraphQL searchTweets", type: :request do
   end
 
   it "returns empty when no matches" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { query: "nonexistent_xyz", first: 20 }.to_json,
       operationName: "SearchTweets"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -67,8 +67,6 @@ RSpec.describe "GraphQL searchTweets", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { query: "Ruby", first: 20 }.to_json,
@@ -82,13 +80,13 @@ RSpec.describe "GraphQL searchTweets", type: :request do
   end
 
   it "returns a validation error for an empty query string" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { query: "   ", first: 20 }.to_json,
       operationName: "SearchTweets"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -97,13 +95,15 @@ RSpec.describe "GraphQL searchTweets", type: :request do
   end
 
   it "paginates results" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
+
+    4.times { |i| create(:tweet, user: author, content: "page srch #{i} shared token") }
 
     post "/graphql", params: {
       query: query,
-      variables: { query: "e", first: 2 }.to_json,
+      variables: { query: "srch", first: 2 }.to_json,
       operationName: "SearchTweets"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -115,9 +115,9 @@ RSpec.describe "GraphQL searchTweets", type: :request do
 
     post "/graphql", params: {
       query: query,
-      variables: { query: "e", first: 2, after: end_cursor }.to_json,
+      variables: { query: "srch", first: 2, after: end_cursor }.to_json,
       operationName: "SearchTweets"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 

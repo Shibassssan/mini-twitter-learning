@@ -18,7 +18,7 @@ RSpec.describe "GraphQL unfollowUser", type: :request do
   let(:target_user) { create(:user) }
 
   it "unfollows a previously followed user" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
     create(:follow, follower: user, followed: target_user)
 
     expect do
@@ -26,7 +26,7 @@ RSpec.describe "GraphQL unfollowUser", type: :request do
         query: query,
         variables: { userUuid: target_user.uuid }.to_json,
         operationName: "UnfollowUser"
-      }
+      }, headers: headers
     end.to change(Follow, :count).by(-1)
 
     body = JSON.parse(response.body)
@@ -36,8 +36,6 @@ RSpec.describe "GraphQL unfollowUser", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { userUuid: target_user.uuid }.to_json,
@@ -51,13 +49,13 @@ RSpec.describe "GraphQL unfollowUser", type: :request do
   end
 
   it "returns a not found error when unfollowing a user not followed" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { userUuid: target_user.uuid }.to_json,
       operationName: "UnfollowUser"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 

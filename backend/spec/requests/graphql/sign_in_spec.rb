@@ -85,6 +85,6 @@ RSpec.describe "GraphQL signIn", type: :request do
 
     expect(body["data"]["signIn"]).to be_nil
     expect(body["errors"].first["extensions"]["code"]).to eq("INTERNAL_SERVER_ERROR")
-    expect(body["errors"].first["message"]).to eq("Failed to create session")
+    expect(body["errors"].first["message"]).to eq("Internal server error")
   end
 end

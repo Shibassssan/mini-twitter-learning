@@ -12,12 +12,12 @@ RSpec.describe "GraphQL signOut", type: :request do
   let(:user) { create(:user) }
 
   it "returns true and clears the refresh cookie for an authenticated user" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
     allow(AuthService).to receive(:flush_refresh_token!).with("refresh-token").and_return(1)
 
     cookies[JWTSessions.refresh_cookie] = "refresh-token"
 
-    post "/graphql", params: { query: query }
+    post "/graphql", params: { query: query }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -28,8 +28,6 @@ RSpec.describe "GraphQL signOut", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: { query: query }
 
     body = JSON.parse(response.body)

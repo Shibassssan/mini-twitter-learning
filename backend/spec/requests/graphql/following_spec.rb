@@ -24,7 +24,7 @@ RSpec.describe "GraphQL following", type: :request do
   let(:target_user) { create(:user) }
 
   it "returns users that the given user is following" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     followed_users = create_list(:user, 3)
     followed_users.each { |followed| create(:follow, follower: target_user, followed: followed) }
@@ -33,7 +33,7 @@ RSpec.describe "GraphQL following", type: :request do
       query: query,
       variables: { uuid: target_user.uuid, first: 20 }.to_json,
       operationName: "Following"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -42,13 +42,13 @@ RSpec.describe "GraphQL following", type: :request do
   end
 
   it "returns empty when the user is not following anyone" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { uuid: target_user.uuid, first: 20 }.to_json,
       operationName: "Following"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -58,8 +58,6 @@ RSpec.describe "GraphQL following", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { uuid: target_user.uuid, first: 20 }.to_json,
@@ -73,13 +71,13 @@ RSpec.describe "GraphQL following", type: :request do
   end
 
   it "returns a not found error for an invalid user uuid" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { uuid: "nonexistent-uuid", first: 20 }.to_json,
       operationName: "Following"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 

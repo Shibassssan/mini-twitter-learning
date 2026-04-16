@@ -18,14 +18,14 @@ RSpec.describe "GraphQL likeTweet", type: :request do
   let(:tweet) { create(:tweet) }
 
   it "likes a tweet for the current user" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     expect do
       post "/graphql", params: {
         query: query,
         variables: { tweetUuid: tweet.uuid }.to_json,
         operationName: "LikeTweet"
-      }
+      }, headers: headers
     end.to change(Like, :count).by(1)
 
     body = JSON.parse(response.body)
@@ -36,8 +36,6 @@ RSpec.describe "GraphQL likeTweet", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { tweetUuid: tweet.uuid }.to_json,
@@ -51,14 +49,14 @@ RSpec.describe "GraphQL likeTweet", type: :request do
   end
 
   it "returns a validation error for a duplicate like" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
     create(:like, user: user, tweet: tweet)
 
     post "/graphql", params: {
       query: query,
       variables: { tweetUuid: tweet.uuid }.to_json,
       operationName: "LikeTweet"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -67,13 +65,13 @@ RSpec.describe "GraphQL likeTweet", type: :request do
   end
 
   it "returns a not found error for an invalid tweet uuid" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { tweetUuid: "nonexistent-uuid" }.to_json,
       operationName: "LikeTweet"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 

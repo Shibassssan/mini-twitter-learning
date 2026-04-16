@@ -31,13 +31,13 @@ RSpec.describe "GraphQL searchUsers", type: :request do
   end
 
   it "finds users by username partial match" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { query: "alice", first: 20 }.to_json,
       operationName: "SearchUsers"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -48,13 +48,13 @@ RSpec.describe "GraphQL searchUsers", type: :request do
   end
 
   it "finds users by display_name partial match" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { query: "Engineer", first: 20 }.to_json,
       operationName: "SearchUsers"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -65,13 +65,13 @@ RSpec.describe "GraphQL searchUsers", type: :request do
   end
 
   it "returns empty when no matches" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { query: "nonexistent_xyz", first: 20 }.to_json,
       operationName: "SearchUsers"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -80,13 +80,15 @@ RSpec.describe "GraphQL searchUsers", type: :request do
   end
 
   it "paginates results" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
+
+    4.times { |i| create(:user, username: "usr_srch_#{i}", display_name: "Z") }
 
     post "/graphql", params: {
       query: query,
-      variables: { query: "_", first: 2 }.to_json,
+      variables: { query: "srch", first: 2 }.to_json,
       operationName: "SearchUsers"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -98,9 +100,9 @@ RSpec.describe "GraphQL searchUsers", type: :request do
 
     post "/graphql", params: {
       query: query,
-      variables: { query: "_", first: 2, after: end_cursor }.to_json,
+      variables: { query: "srch", first: 2, after: end_cursor }.to_json,
       operationName: "SearchUsers"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -109,8 +111,6 @@ RSpec.describe "GraphQL searchUsers", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { query: "alice", first: 20 }.to_json,
@@ -124,13 +124,13 @@ RSpec.describe "GraphQL searchUsers", type: :request do
   end
 
   it "returns a validation error for an empty query string" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { query: "   ", first: 20 }.to_json,
       operationName: "SearchUsers"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 

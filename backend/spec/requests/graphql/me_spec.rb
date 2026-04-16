@@ -15,9 +15,9 @@ RSpec.describe "GraphQL me", type: :request do
 
   it "returns the current user when authenticated" do
     user = create(:user, username: "auth_user")
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
-    post "/graphql", params: { query: query }
+    post "/graphql", params: { query: query }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -26,8 +26,6 @@ RSpec.describe "GraphQL me", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: { query: query }
 
     body = JSON.parse(response.body)

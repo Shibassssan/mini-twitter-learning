@@ -16,13 +16,13 @@ RSpec.describe "GraphQL updateProfile", type: :request do
   let(:user) { create(:user, display_name: "Original Name", bio: "Original bio") }
 
   it "updates display_name only" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { displayName: "New Name" }.to_json,
       operationName: "UpdateProfile"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -32,13 +32,13 @@ RSpec.describe "GraphQL updateProfile", type: :request do
   end
 
   it "updates bio only" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { bio: "New bio" }.to_json,
       operationName: "UpdateProfile"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -48,13 +48,13 @@ RSpec.describe "GraphQL updateProfile", type: :request do
   end
 
   it "updates both display_name and bio" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { displayName: "New Name", bio: "New bio" }.to_json,
       operationName: "UpdateProfile"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -64,13 +64,13 @@ RSpec.describe "GraphQL updateProfile", type: :request do
   end
 
   it "clears bio by setting null" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { bio: nil }.to_json,
       operationName: "UpdateProfile"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -79,8 +79,6 @@ RSpec.describe "GraphQL updateProfile", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { displayName: "New Name" }.to_json,
@@ -94,13 +92,13 @@ RSpec.describe "GraphQL updateProfile", type: :request do
   end
 
   it "returns a validation error when display_name is too long" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { displayName: "a" * 51 }.to_json,
       operationName: "UpdateProfile"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -109,13 +107,13 @@ RSpec.describe "GraphQL updateProfile", type: :request do
   end
 
   it "returns a validation error when no attributes are provided" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: {}.to_json,
       operationName: "UpdateProfile"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 

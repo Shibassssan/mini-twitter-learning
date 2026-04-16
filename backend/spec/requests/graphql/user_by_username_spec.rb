@@ -22,13 +22,13 @@ RSpec.describe "GraphQL userByUsername", type: :request do
   let(:target_user) { create(:user, username: "target_user", display_name: "Target", bio: "Hello world") }
 
   it "returns user by username" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { username: target_user.username }.to_json,
       operationName: "UserByUsername"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -43,8 +43,6 @@ RSpec.describe "GraphQL userByUsername", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { username: target_user.username }.to_json,
@@ -58,13 +56,13 @@ RSpec.describe "GraphQL userByUsername", type: :request do
   end
 
   it "returns a not found error for a nonexistent username" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { username: "nonexistent_user" }.to_json,
       operationName: "UserByUsername"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 

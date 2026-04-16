@@ -18,14 +18,14 @@ RSpec.describe "GraphQL followUser", type: :request do
   let(:target_user) { create(:user) }
 
   it "follows another user" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     expect do
       post "/graphql", params: {
         query: query,
         variables: { userUuid: target_user.uuid }.to_json,
         operationName: "FollowUser"
-      }
+      }, headers: headers
     end.to change(Follow, :count).by(1)
 
     body = JSON.parse(response.body)
@@ -35,8 +35,6 @@ RSpec.describe "GraphQL followUser", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { userUuid: target_user.uuid }.to_json,
@@ -50,13 +48,13 @@ RSpec.describe "GraphQL followUser", type: :request do
   end
 
   it "returns a validation error when following yourself" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { userUuid: user.uuid }.to_json,
       operationName: "FollowUser"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -65,14 +63,14 @@ RSpec.describe "GraphQL followUser", type: :request do
   end
 
   it "returns a validation error for a duplicate follow" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
     create(:follow, follower: user, followed: target_user)
 
     post "/graphql", params: {
       query: query,
       variables: { userUuid: target_user.uuid }.to_json,
       operationName: "FollowUser"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -81,13 +79,13 @@ RSpec.describe "GraphQL followUser", type: :request do
   end
 
   it "returns a not found error for an invalid user uuid" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { userUuid: "nonexistent-uuid" }.to_json,
       operationName: "FollowUser"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 

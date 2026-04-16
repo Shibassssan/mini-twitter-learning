@@ -24,7 +24,7 @@ RSpec.describe "GraphQL likedTweets", type: :request do
   let(:user) { create(:user) }
 
   it "returns the authenticated user's liked tweets" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     tweets = create_list(:tweet, 3)
     tweets.each { |tweet| create(:like, user: user, tweet: tweet) }
@@ -33,7 +33,7 @@ RSpec.describe "GraphQL likedTweets", type: :request do
       query: query,
       variables: { first: 20 }.to_json,
       operationName: "LikedTweets"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -42,13 +42,13 @@ RSpec.describe "GraphQL likedTweets", type: :request do
   end
 
   it "returns empty when the user has no likes" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+    headers = sign_in_as(user)
 
     post "/graphql", params: {
       query: query,
       variables: { first: 20 }.to_json,
       operationName: "LikedTweets"
-    }
+    }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -58,8 +58,6 @@ RSpec.describe "GraphQL likedTweets", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: {
       query: query,
       variables: { first: 20 }.to_json,

@@ -19,13 +19,29 @@ RSpec.describe "GraphQL timeline", type: :request do
     GRAPHQL
   end
 
-  let(:user) { create(:user) }
+  let(:viewer) { create(:user) }
+  let(:author) { create(:user) }
 
-  it "returns an empty connection until follow relationships are implemented" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
-    create(:tweet, user: user)
+  it "returns tweets from followed users only" do
+    headers = sign_in_as(viewer)
+    create(:follow, follower: viewer, followed: author)
+    tweet = create(:tweet, user: author)
+    create(:tweet, user: viewer)
 
-    post "/graphql", params: { query: query, operationName: "Timeline" }
+    post "/graphql", params: { query: query, operationName: "Timeline" }, headers: headers
+
+    body = JSON.parse(response.body)
+
+    expect(body["errors"]).to be_nil
+    ids = body.dig("data", "timeline", "edges").map { |e| e.dig("node", "id") }
+    expect(ids).to eq([tweet.uuid])
+  end
+
+  it "returns an empty connection when not following anyone" do
+    headers = sign_in_as(viewer)
+    create(:tweet, user: author)
+
+    post "/graphql", params: { query: query, operationName: "Timeline" }, headers: headers
 
     body = JSON.parse(response.body)
 
@@ -35,8 +51,6 @@ RSpec.describe "GraphQL timeline", type: :request do
   end
 
   it "returns an authentication error when unauthenticated" do
-    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
-
     post "/graphql", params: { query: query, operationName: "Timeline" }
 
     body = JSON.parse(response.body)
