@@ -9,12 +9,12 @@ module Resolvers
     def resolve(first:, after: nil)
       current_user = authenticate!
 
-      relation = Tweet
-        .joins(:likes)
-        .where(likes: { user_id: current_user.id })
-        .select("tweets.*, likes.created_at AS cursor_created_at, likes.id AS cursor_id")
-
-      paginate_relation(relation, first: first, after: after, paging_by: :likes)
+      paginate_relation(
+        current_user.liked_tweets_cursor_relation,
+        first: first,
+        after: after,
+        paging_by: :likes
+      )
     rescue GraphQL::ExecutionError
       raise
     end

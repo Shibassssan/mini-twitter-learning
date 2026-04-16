@@ -47,9 +47,21 @@ class User < ApplicationRecord
       .select(cursor_select_sql)
   end
 
+  # GraphQL の likes カーソルページング用（likes.created_at / likes.id）
+  def liked_tweets_cursor_relation
+    Tweet
+      .joins(:likes)
+      .where(likes: { user_id: id })
+      .select(liked_tweets_cursor_select_sql)
+  end
+
   private
 
   def cursor_select_sql
     "users.*, follows.created_at AS cursor_created_at, follows.id AS cursor_id"
+  end
+
+  def liked_tweets_cursor_select_sql
+    "tweets.*, likes.created_at AS cursor_created_at, likes.id AS cursor_id"
   end
 end
