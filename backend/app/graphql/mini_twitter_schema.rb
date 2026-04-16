@@ -1,11 +1,15 @@
 class MiniTwitterSchema < GraphQL::Schema
   use GraphQL::Dataloader
+  use GraphQL::Subscriptions::ActionCableSubscriptions
 
   mutation(Types::MutationType)
   query(Types::QueryType)
+  subscription(Types::SubscriptionType)
 
   max_depth 10
   max_complexity 200
+
+  disable_introspection_entry_points unless Rails.env.development? || Rails.env.test?
 
   rescue_from ActiveRecord::RecordInvalid do |error|
     raise GraphQL::ExecutionError.new(
@@ -39,6 +43,14 @@ class MiniTwitterSchema < GraphQL::Schema
     raise GraphQL::ExecutionError.new(
       "Authentication required",
       extensions: { code: "AUTHENTICATION_ERROR" }
+    )
+  end
+
+  rescue_from StandardError do |error|
+    Rails.logger.error("Unexpected GraphQL error: #{error.class}: #{error.message}\n#{error.backtrace&.first(5)&.join("\n")}")
+    raise GraphQL::ExecutionError.new(
+      "Internal server error",
+      extensions: { code: "INTERNAL_SERVER_ERROR" }
     )
   end
 
