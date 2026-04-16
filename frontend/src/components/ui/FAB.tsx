@@ -1,15 +1,18 @@
 import { useNavigate } from '@tanstack/react-router'
+import { Button } from '@heroui/react'
 
 export function FAB() {
   const navigate = useNavigate()
   return (
-    <button
-      type="button"
-      onClick={() => navigate({ to: '/compose' })}
-      className="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-2xl z-20"
+    <Button
+      isIconOnly
+      variant="primary"
+      size="lg"
+      onPress={() => navigate({ to: '/compose' })}
+      className="md:hidden fixed bottom-20 right-4 z-20 size-14 rounded-full shadow-lg text-2xl"
       aria-label="ツイートを作成"
     >
       +
-    </button>
+    </Button>
   )
 }

@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { Spinner } from '@heroui/react'
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
 import { EmptyState } from './EmptyState'
 
@@ -27,7 +28,7 @@ export function InfiniteScrollList<T extends { id: string }>({
   return (
     <div>
       {items.map(renderItem)}
-      {loading && (loadingComponent ?? <div className="p-4 text-center text-default-400">読み込み中...</div>)}
+      {loading && (loadingComponent ?? <div className="flex justify-center p-4"><Spinner size="sm" /></div>)}
       {!loading && items.length === 0 && <EmptyState message={emptyMessage} />}
       {hasNextPage && <div ref={sentinelRef} className="h-4" />}
     </div>

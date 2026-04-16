@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { Button } from '@heroui/react'
 
 interface Props {
   children: ReactNode
@@ -36,13 +37,9 @@ export class ErrorBoundary extends Component<Props, State> {
                 {this.state.error.message}
               </p>
             )}
-            <button
-              type="button"
-              className="px-6 py-2 rounded-lg bg-primary text-white font-medium hover:opacity-90 transition-opacity"
-              onClick={() => window.location.reload()}
-            >
+            <Button variant="primary" onPress={() => window.location.reload()}>
               再読み込み
-            </button>
+            </Button>
           </div>
         </div>
       )

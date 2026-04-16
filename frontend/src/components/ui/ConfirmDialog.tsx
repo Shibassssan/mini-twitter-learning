@@ -1,5 +1,4 @@
 import { Modal, Button, useOverlayState } from '@heroui/react'
-import { useEffect } from 'react'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -26,12 +25,6 @@ export function ConfirmDialog({
       if (!open) onClose()
     },
   })
-
-  useEffect(() => {
-    if (isOpen !== state.isOpen) {
-      state.setOpen(isOpen)
-    }
-  }, [isOpen, state])
 
   return (
     <Modal state={state}>
