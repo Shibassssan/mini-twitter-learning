@@ -36,6 +36,30 @@ class Rack::Attack
     req.ip
   end
 
+  AUTH_GRAPHQL_OPS = %w[SignUp SignIn RefreshToken signUp signIn refreshToken].freeze
+
+  throttle("graphql/general", limit: 120, period: 1.minute) do |req|
+    next unless req.post? && req.path == "/graphql"
+    next if Rack::Attack.send(:graphql_operation?, req, AUTH_GRAPHQL_OPS)
+
+    req.ip
+  end
+
+  throttle("graphql/search", limit: 30, period: 1.minute) do |req|
+    next unless Rack::Attack.send(:graphql_operation?, req, %w[SearchTweets SearchUsers searchTweets searchUsers])
+
+    req.ip
+  end
+
+  throttle("graphql/social", limit: 60, period: 1.minute) do |req|
+    next unless Rack::Attack.send(:graphql_operation?, req, %w[
+      FollowUser UnfollowUser LikeTweet UnlikeTweet
+      followUser unfollowUser likeTweet unlikeTweet
+    ])
+
+    req.ip
+  end
+
   class << self
     private
 
