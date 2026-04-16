@@ -1,8 +1,10 @@
-import { useState } from 'react'
 import { useMutation } from '@apollo/client/react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, TextArea, Spinner } from '@heroui/react'
 import { CreateTweetDocument } from '@/lib/graphql/generated/graphql'
 import { extractGqlErrorMessage } from '@/lib/utils/graphqlError'
+import { tweetSchema, type TweetFormValues } from '@/lib/validations/tweet'
 
 interface TweetComposerProps {
   onSuccess?: () => void
@@ -10,42 +12,59 @@ interface TweetComposerProps {
 }
 
 export function TweetComposer({ onSuccess, refetchQueries }: TweetComposerProps) {
-  const [content, setContent] = useState('')
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    setError,
+    formState: { errors, isValid },
+  } = useForm<TweetFormValues>({
+    resolver: zodResolver(tweetSchema),
+    mode: 'onChange',
+    defaultValues: { content: '' },
+  })
+
   const [createTweet, { loading }] = useMutation(CreateTweetDocument, {
-    refetchQueries: refetchQueries ?? ['PublicTimeline', 'Timeline'],
+    refetchQueries: refetchQueries ?? [],
     onCompleted: () => {
-      setContent('')
-      setErrorMsg(null)
+      reset()
       onSuccess?.()
     },
     onError: (err) => {
-      setErrorMsg(extractGqlErrorMessage(err, '投稿に失敗しました'))
+      setError('root', { message: extractGqlErrorMessage(err, '投稿に失敗しました') })
     },
   })
 
-  const isValid = content.trim().length > 0 && content.length <= 300
+  const content = watch('content')
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!isValid) return
-    setErrorMsg(null)
-    createTweet({ variables: { content } })
+  const onSubmit = (data: TweetFormValues) => {
+    createTweet({ variables: { content: data.content } })
   }
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-b border-divider">
+    <form onSubmit={handleSubmit(onSubmit)} className="p-3 sm:p-4 border-b border-divider">
       <TextArea
         fullWidth
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
+        {...register('content')}
+        aria-label="ツイート内容"
+        aria-invalid={errors.content ? true : undefined}
+        aria-describedby={errors.content ? 'tweet-content-error' : undefined}
         placeholder="いまどうしてる？"
         rows={3}
         maxLength={300}
         style={{ resize: 'none' }}
+        className={errors.content ? 'border-danger' : undefined}
       />
-      {errorMsg && (
-        <p className="text-danger text-xs mt-1">{errorMsg}</p>
+      {errors.content?.message && (
+        <p id="tweet-content-error" role="alert" className="text-danger text-xs mt-1">
+          {errors.content.message}
+        </p>
+      )}
+      {errors.root?.message && (
+        <p role="alert" className="text-danger text-xs mt-1">
+          {errors.root.message}
+        </p>
       )}
       <div className="flex items-center justify-between mt-2">
         <span className={`text-xs ${content.length > 280 ? 'text-danger' : 'text-default-400'}`}>
@@ -58,7 +77,16 @@ export function TweetComposer({ onSuccess, refetchQueries }: TweetComposerProps)
           isDisabled={!isValid || loading}
           isPending={loading}
         >
-          {({isPending}) => isPending ? <><Spinner color="current" size="sm" />投稿中...</> : 'ツイート'}
+          {({ isPending }) =>
+            isPending ? (
+              <>
+                <Spinner color="current" size="sm" />
+                投稿中...
+              </>
+            ) : (
+              'ツイート'
+            )
+          }
         </Button>
       </div>
     </form>
