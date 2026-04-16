@@ -6,51 +6,68 @@ import {
   Observable,
   from,
   split,
-} from '@apollo/client'
-import { getMainDefinition, relayStylePagination } from '@apollo/client/utilities'
-import { onError } from '@apollo/client/link/error'
-import { CombinedGraphQLErrors } from '@apollo/client/errors'
-import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink'
-import { RefreshTokenDocument } from '@/lib/graphql/generated/graphql'
-import { getActionCableConsumer } from '@/lib/apollo/actionCableConsumer'
-import { useAuthStore } from '@/lib/stores/authStore'
+} from "@apollo/client";
+import {
+  getMainDefinition,
+  relayStylePagination,
+} from "@apollo/client/utilities";
+import { onError } from "@apollo/client/link/error";
+import { CombinedGraphQLErrors } from "@apollo/client/errors";
+import _ActionCableLink from "graphql-ruby-client/subscriptions/ActionCableLink";
+import { RefreshTokenDocument } from "@/lib/graphql/generated/graphql";
+import { getActionCableConsumer } from "@/lib/apollo/actionCableConsumer";
+import { useAuthStore } from "@/lib/stores/authStore";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ActionCableLink: typeof _ActionCableLink =
+  (_ActionCableLink as any).default ?? _ActionCableLink;
 
 const httpLink = new HttpLink({
-  uri: '/graphql',
-  credentials: 'include',
-})
+  uri: "/graphql",
+  credentials: "include",
+});
 
 const authLink = new ApolloLink((operation, forward) => {
-  const accessToken = useAuthStore.getState().accessToken
-  operation.setContext(({ headers = {} }: { headers: Record<string, string> }) => ({
-    headers: {
-      ...headers,
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    },
-  }))
-  return forward(operation)
-})
+  const accessToken = useAuthStore.getState().accessToken;
+  operation.setContext(
+    ({ headers = {} }: { headers: Record<string, string> }) => ({
+      headers: {
+        ...headers,
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+    }),
+  );
+  return forward(operation);
+});
 
-let isRefreshing = false
-let pendingRequests: Array<() => void> = []
+let isRefreshing = false;
+let pendingRequests: Array<() => void> = [];
 
 const resolvePendingRequests = () => {
   for (const callback of pendingRequests) {
-    callback()
+    callback();
   }
-  pendingRequests = []
-}
+  pendingRequests = [];
+};
 
 const errorLink = onError(({ error, operation, forward }) => {
-  if (!CombinedGraphQLErrors.is(error)) return
+  if (!CombinedGraphQLErrors.is(error)) return;
 
   for (const err of error.errors) {
-    const code = err.extensions?.code
+    const code = err.extensions?.code;
     if (
-      code === 'AUTHENTICATION_ERROR' ||
-      code === 'UNAUTHORIZED' ||
-      err.message?.toLowerCase().includes('authentication required')
+      code === "AUTHENTICATION_ERROR" ||
+      code === "UNAUTHORIZED" ||
+      err.message?.toLowerCase().includes("authentication required")
     ) {
+      // refreshToken 自身が失敗した場合は再リフレッシュを試みずエラーを伝播させる
+      // (呼び出し元の .catch() に処理を委ねることでリダイレクトループを防ぐ)
+      if (operation.operationName === "RefreshToken") {
+        pendingRequests = [];
+        isRefreshing = false;
+        return;
+      }
+
       if (isRefreshing) {
         return new Observable((observer) => {
           pendingRequests.push(() => {
@@ -58,57 +75,59 @@ const errorLink = onError(({ error, operation, forward }) => {
               next: observer.next.bind(observer),
               error: observer.error.bind(observer),
               complete: observer.complete.bind(observer),
-            }
-            forward(operation).subscribe(subscriber)
-          })
-        })
+            };
+            forward(operation).subscribe(subscriber);
+          });
+        });
       }
 
-      isRefreshing = true
+      isRefreshing = true;
 
       return new Observable((observer) => {
         apolloClient
           .mutate({ mutation: RefreshTokenDocument })
           .then(({ data }) => {
             if (!data?.refreshToken) {
-              throw new Error('セッションが有効ではありません')
+              throw new Error("セッションが有効ではありません");
             }
-            const { accessToken, user } = data.refreshToken
-            useAuthStore.getState().setAuth(user, accessToken)
-            resolvePendingRequests()
+            const { accessToken, user } = data.refreshToken;
+            useAuthStore.getState().setAuth(user, accessToken);
+            resolvePendingRequests();
             const subscriber = {
               next: observer.next.bind(observer),
               error: observer.error.bind(observer),
               complete: observer.complete.bind(observer),
-            }
-            forward(operation).subscribe(subscriber)
+            };
+            forward(operation).subscribe(subscriber);
           })
           .catch(() => {
-            pendingRequests = []
-            useAuthStore.getState().clearAuth()
-            window.location.href = '/login'
-            observer.error(new Error('Session expired'))
+            pendingRequests = [];
+            useAuthStore.getState().clearAuth();
+            window.location.href = "/login";
+            observer.error(new Error("Session expired"));
           })
           .finally(() => {
-            isRefreshing = false
-          })
-      })
+            isRefreshing = false;
+          });
+      });
     }
   }
-})
+});
 
 const actionCableLink = new ActionCableLink({
   cable: getActionCableConsumer(),
-})
+});
 
 const splitLink = split(
   ({ query }) => {
-    const def = getMainDefinition(query)
-    return def.kind === 'OperationDefinition' && def.operation === 'subscription'
+    const def = getMainDefinition(query);
+    return (
+      def.kind === "OperationDefinition" && def.operation === "subscription"
+    );
   },
   actionCableLink,
   httpLink,
-)
+);
 
 export const apolloClient = new ApolloClient({
   link: from([errorLink, authLink, splitLink]),
@@ -120,15 +139,15 @@ export const apolloClient = new ApolloClient({
         fields: {
           timeline: relayStylePagination(),
           publicTimeline: relayStylePagination(),
-          userTweets: relayStylePagination(['uuid']),
+          userTweets: relayStylePagination(["uuid"]),
           likedTweets: relayStylePagination(),
-          followers: relayStylePagination(['uuid']),
-          following: relayStylePagination(['uuid']),
-          searchUsers: relayStylePagination(['query']),
-          searchTweets: relayStylePagination(['query']),
+          followers: relayStylePagination(["uuid"]),
+          following: relayStylePagination(["uuid"]),
+          searchUsers: relayStylePagination(["query"]),
+          searchTweets: relayStylePagination(["query"]),
         },
       },
     },
   }),
   dataMasking: false,
-})
+});

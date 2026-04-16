@@ -10,6 +10,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  optimizeDeps: {
+    include: ['graphql-ruby-client/subscriptions/ActionCableLink'],
+  },
   build: {
     rollupOptions: {
       output: {
