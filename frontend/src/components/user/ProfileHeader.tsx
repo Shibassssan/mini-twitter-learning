@@ -22,11 +22,11 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
 
   return (
     <div>
-      <div className="h-[150px] bg-gradient-to-r from-primary/60 to-primary/30" />
+      <div className="h-[120px] sm:h-[150px] bg-gradient-to-r from-primary/60 to-primary/30" />
 
-      <div className="px-4">
-        <div className="flex justify-between items-start">
-          <div className="-mt-10 border-4 border-background rounded-full">
+      <div className="px-3 sm:px-4">
+        <div className="flex justify-between items-start gap-2">
+          <div className="-mt-8 sm:-mt-10 border-4 border-background rounded-full shrink-0">
             <AvatarUploader
               currentAvatarUrl={user.avatarUrl}
               displayName={user.displayName}
@@ -35,7 +35,7 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
             />
           </div>
 
-          <div className="mt-3">
+          <div className="mt-2 sm:mt-3 shrink-0">
             {isOwnProfile ? (
               <Button
                 variant="outline"
@@ -59,8 +59,8 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
         </div>
 
         <div className="mt-3">
-          <h2 className="text-xl font-bold">{user.displayName}</h2>
-          <p className="text-default-500 text-sm">@{user.username}</p>
+          <h2 className="text-lg sm:text-xl font-bold">{user.displayName}</h2>
+          <p className="text-default-500 text-xs sm:text-sm">@{user.username}</p>
         </div>
 
         {user.bio && <p className="mt-2 text-sm">{user.bio}</p>}
@@ -72,7 +72,7 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
           {joinDate}
         </p>
 
-        <div className="mt-3 flex gap-4 text-sm">
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm">
           <span className="font-bold">{user.tweetsCount}</span>
           <span className="text-default-500">ツイート</span>
           <Link

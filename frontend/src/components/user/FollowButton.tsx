@@ -68,6 +68,7 @@ export const FollowButton = memo(function FollowButton({
         size="sm"
         isDisabled={loading}
         onPress={() => unfollowUser()}
+        aria-label="フォロー解除"
         className="group rounded-full hover:border-danger/40 hover:text-danger hover:bg-danger/10"
       >
         <span className="group-hover:hidden">フォロー中</span>
@@ -81,6 +82,7 @@ export const FollowButton = memo(function FollowButton({
       size="sm"
       isDisabled={loading}
       onPress={() => followUser()}
+      aria-label="フォローする"
       className="rounded-full bg-foreground text-background"
     >
       フォローする

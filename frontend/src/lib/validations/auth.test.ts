@@ -26,15 +26,15 @@ describe('signUpSchema', () => {
       }
     })
 
-    it('20文字超でエラー', () => {
+    it('15文字超でエラー', () => {
       const result = signUpSchema.safeParse({
         ...validData,
-        username: 'a'.repeat(21),
+        username: 'a'.repeat(16),
       })
       expect(result.success).toBe(false)
       if (!result.success) {
         expect(result.error.issues[0].message).toBe(
-          'ユーザー名は20文字以内で入力してください',
+          'ユーザー名は15文字以内で入力してください',
         )
       }
     })
@@ -57,10 +57,10 @@ describe('signUpSchema', () => {
       expect(result.success).toBe(true)
     })
 
-    it('20文字ちょうどでパスする', () => {
+    it('15文字ちょうどでパスする', () => {
       const result = signUpSchema.safeParse({
         ...validData,
-        username: 'a'.repeat(20),
+        username: 'a'.repeat(15),
       })
       expect(result.success).toBe(true)
     })

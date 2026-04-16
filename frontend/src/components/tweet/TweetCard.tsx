@@ -81,8 +81,8 @@ export const TweetCard = memo(function TweetCard({ tweet, onDelete }: TweetCardP
 
   return (
     <>
-      <article className="flex gap-3 p-4 border-b border-divider hover:bg-default-50 transition-colors">
-        <Avatar size="md" className="shrink-0">
+      <article className="flex gap-2 sm:gap-3 p-3 sm:p-4 border-b border-divider hover:bg-default-50 transition-colors">
+        <Avatar size="md" className="shrink-0 scale-90 origin-top-left sm:scale-100">
           <Avatar.Image src={tweet.author.avatarUrl ?? undefined} alt={tweet.author.displayName} />
           <Avatar.Fallback>{initials}</Avatar.Fallback>
         </Avatar>
@@ -111,6 +111,7 @@ export const TweetCard = memo(function TweetCard({ tweet, onDelete }: TweetCardP
             size="sm"
             onPress={toggleLike}
             isDisabled={likeLoading || unlikeLoading}
+            aria-label={tweet.isLikedByMe ? 'いいねを取り消す' : 'いいねする'}
             className="mt-2 flex items-center gap-1 text-xs group"
           >
             {tweet.isLikedByMe ? (

@@ -20,7 +20,7 @@ function HomePage() {
       onSelectionChange={(key) => setActiveTimelineTab(key as 'following' | 'global')}
     >
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-divider">
-        <h1 className="px-4 py-3 text-xl font-bold hidden md:block">ホーム</h1>
+        <h1 className="px-4 py-3 text-xl font-bold max-md:sr-only">ホーム</h1>
         <Tabs.ListContainer>
           <Tabs.List aria-label="タイムライン">
             <Tabs.Tab id="following">フォロー中</Tabs.Tab>

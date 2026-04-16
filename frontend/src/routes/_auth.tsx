@@ -17,10 +17,19 @@ export const Route = createFileRoute('/_auth')({
 function AuthLayout() {
   return (
     <div className="min-h-screen bg-background">
+      <a
+        href="#main-content"
+        className="skip-link rounded-md bg-foreground px-4 py-2 text-background outline-none"
+      >
+        メインコンテンツへスキップ
+      </a>
       <TopBar />
-      <div className="flex max-w-4xl mx-auto">
+      <div className="flex w-full max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto px-0 sm:px-0">
         <Sidebar />
-        <main className="flex-1 min-h-screen border-x border-divider pb-16 md:pb-0">
+        <main
+          id="main-content"
+          className="flex-1 min-h-screen border-x border-divider pb-16 md:pb-0 w-full min-w-0"
+        >
           <Outlet />
         </main>
       </div>

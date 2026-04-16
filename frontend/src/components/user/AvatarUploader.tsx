@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useMutation } from '@apollo/client/react'
 import { Avatar, Spinner } from '@heroui/react'
 import { UpdateAvatarDocument } from '@/lib/graphql/generated/graphql'
@@ -22,9 +22,26 @@ export function AvatarUploader({
   const fileInputId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const objectUrlRef = useRef<string | null>(null)
+
+  const revokePreviewUrl = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current)
+      objectUrlRef.current = null
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      revokePreviewUrl()
+    }
+  }, [])
 
   const [updateAvatar, { loading }] = useMutation(UpdateAvatarDocument, {
-    onCompleted: () => setPreview(null),
+    onCompleted: () => {
+      revokePreviewUrl()
+      setPreview(null)
+    },
     refetchQueries: ['UserByUsername', 'Me'],
   })
 
@@ -44,7 +61,10 @@ export function AvatarUploader({
       return
     }
 
-    setPreview(URL.createObjectURL(file))
+    revokePreviewUrl()
+    const url = URL.createObjectURL(file)
+    objectUrlRef.current = url
+    setPreview(url)
     updateAvatar({ variables: { avatar: file } })
     e.target.value = ''
   }

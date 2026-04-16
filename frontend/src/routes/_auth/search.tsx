@@ -13,7 +13,9 @@ export const Route = createFileRoute('/_auth/search')({
 
 function SearchPage() {
   const [inputValue, setInputValue] = useState('')
-  const debouncedQuery = useDebounce(inputValue.trim(), 300)
+  const trimmed = inputValue.trim()
+  const debouncedQuery = useDebounce(trimmed, 300)
+  const canSearch = debouncedQuery.length >= 3
   const { activeSearchTab, setActiveSearchTab } = useUiStore()
 
   return (
@@ -23,7 +25,7 @@ function SearchPage() {
       onSelectionChange={(key) => setActiveSearchTab(key as 'users' | 'tweets')}
     >
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-divider">
-        <div className="px-4 py-2">
+        <div className="px-3 sm:px-4 py-2">
           <div className="relative">
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-default-400 pointer-events-none z-10"
@@ -44,7 +46,8 @@ function SearchPage() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="キーワードを検索"
+              placeholder="キーワードを検索（3文字以上）"
+              aria-label="キーワードを検索"
               fullWidth
               className="[&_input]:rounded-full [&_input]:pl-10 [&_input]:pr-10"
             />
@@ -88,6 +91,8 @@ function SearchPage() {
       <Tabs.Panel id="users">
         {!debouncedQuery ? (
           <EmptyState message="キーワードを入力して検索" />
+        ) : !canSearch ? (
+          <EmptyState message="検索は3文字以上入力してください" />
         ) : (
           <UserSearchResults query={debouncedQuery} />
         )}
@@ -95,6 +100,8 @@ function SearchPage() {
       <Tabs.Panel id="tweets">
         {!debouncedQuery ? (
           <EmptyState message="キーワードを入力して検索" />
+        ) : !canSearch ? (
+          <EmptyState message="検索は3文字以上入力してください" />
         ) : (
           <TweetSearchResults query={debouncedQuery} />
         )}

@@ -8,7 +8,7 @@ interface ProfileEditModalProps {
   user: { displayName: string; bio?: string | null }
 }
 
-const BIO_MAX_LENGTH = 160
+const BIO_MAX_LENGTH = 200
 
 export function ProfileEditModal({ user }: ProfileEditModalProps) {
   const { isProfileEditOpen, setIsProfileEditOpen } = useUiStore()
