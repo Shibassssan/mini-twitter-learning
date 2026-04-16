@@ -32,7 +32,9 @@ let isRefreshing = false
 let pendingRequests: Array<() => void> = []
 
 const resolvePendingRequests = () => {
-  pendingRequests.forEach((callback) => callback())
+  for (const callback of pendingRequests) {
+    callback()
+  }
   pendingRequests = []
 }
 
