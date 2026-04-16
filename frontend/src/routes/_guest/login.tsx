@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@apollo/client/react'
+import { Button, TextField, Label, Input, FieldError, Spinner } from '@heroui/react'
 import { signInSchema, type SignInFormValues } from '@/lib/validations/auth'
 import { SignInDocument } from '@/lib/graphql/generated/graphql'
 import { useAuthStore } from '@/lib/stores/authStore'
@@ -42,34 +43,39 @@ function LoginPage() {
       <h1 className="text-2xl font-bold mb-2 text-center">MiniTwitter</h1>
       <p className="text-default-500 text-sm text-center mb-6">アカウントにログイン</p>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <div>
-          <label className="text-sm font-medium">メールアドレス</label>
-          <input
+        <TextField isInvalid={!!errors.email} name="email">
+          <Label>メールアドレス</Label>
+          <Input
             {...register('email')}
+            fullWidth
             type="email"
             autoComplete="email"
-            className="w-full border border-divider rounded-lg px-3 py-2 mt-1 bg-background text-sm focus:outline-none focus:border-primary"
+            placeholder="name@example.com"
           />
-          {errors.email && <p className="text-danger text-xs mt-1">{errors.email.message}</p>}
-        </div>
-        <div>
-          <label className="text-sm font-medium">パスワード</label>
-          <input
+          {errors.email && <FieldError>{errors.email.message}</FieldError>}
+        </TextField>
+        <TextField isInvalid={!!errors.password} name="password">
+          <Label>パスワード</Label>
+          <Input
             {...register('password')}
+            fullWidth
             type="password"
             autoComplete="current-password"
-            className="w-full border border-divider rounded-lg px-3 py-2 mt-1 bg-background text-sm focus:outline-none focus:border-primary"
+            placeholder="パスワードを入力"
           />
-          {errors.password && <p className="text-danger text-xs mt-1">{errors.password.message}</p>}
-        </div>
+          {errors.password && <FieldError>{errors.password.message}</FieldError>}
+        </TextField>
         {errors.root && <p className="text-danger text-sm">{errors.root.message}</p>}
-        <button
+        <Button
           type="submit"
-          disabled={loading}
-          className="bg-primary text-white rounded-lg py-2 font-medium disabled:opacity-50 mt-2"
+          variant="primary"
+          fullWidth
+          isDisabled={loading}
+          isPending={loading}
+          className="mt-2"
         >
-          {loading ? 'ログイン中...' : 'ログイン'}
-        </button>
+          {({isPending}) => isPending ? <><Spinner color="current" size="sm" />ログイン中...</> : 'ログイン'}
+        </Button>
       </form>
       <p className="text-center text-sm mt-4 text-default-500">
         アカウントをお持ちでない方は{' '}

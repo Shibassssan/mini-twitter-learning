@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@apollo/client/react";
+import { Button, TextField, Label, Input, FieldError, Spinner } from "@heroui/react";
 import { signUpSchema, type SignUpFormValues } from "@/lib/validations/auth";
 import { SignUpDocument } from "@/lib/graphql/generated/graphql";
 import { useAuthStore } from "@/lib/stores/authStore";
@@ -52,86 +53,74 @@ function SignupPage() {
         新規アカウント登録
       </p>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <div>
-          <label className="text-sm font-medium">ユーザー名</label>
-          <input
+        <TextField isInvalid={!!errors.username} name="username">
+          <Label>ユーザー名</Label>
+          <Input
             {...register("username")}
+            fullWidth
             type="text"
             autoComplete="username"
             placeholder="例: john_doe"
-            className="w-full border border-divider rounded-lg px-3 py-2 mt-1 bg-background text-sm focus:outline-none focus:border-primary"
           />
-          {errors.username && (
-            <p className="text-danger text-xs mt-1">
-              {errors.username.message}
-            </p>
-          )}
-        </div>
-        <div>
-          <label className="text-sm font-medium">表示名</label>
-          <input
+          {errors.username && <FieldError>{errors.username.message}</FieldError>}
+        </TextField>
+        <TextField isInvalid={!!errors.displayName} name="displayName">
+          <Label>表示名</Label>
+          <Input
             {...register("displayName")}
+            fullWidth
             type="text"
             autoComplete="name"
             placeholder="例: John Doe"
-            className="w-full border border-divider rounded-lg px-3 py-2 mt-1 bg-background text-sm focus:outline-none focus:border-primary"
           />
-          {errors.displayName && (
-            <p className="text-danger text-xs mt-1">
-              {errors.displayName.message}
-            </p>
-          )}
-        </div>
-        <div>
-          <label className="text-sm font-medium">メールアドレス</label>
-          <input
+          {errors.displayName && <FieldError>{errors.displayName.message}</FieldError>}
+        </TextField>
+        <TextField isInvalid={!!errors.email} name="email">
+          <Label>メールアドレス</Label>
+          <Input
             {...register("email")}
+            fullWidth
             type="email"
             autoComplete="email"
-            className="w-full border border-divider rounded-lg px-3 py-2 mt-1 bg-background text-sm focus:outline-none focus:border-primary"
+            placeholder="name@example.com"
           />
-          {errors.email && (
-            <p className="text-danger text-xs mt-1">{errors.email.message}</p>
-          )}
-        </div>
-        <div>
-          <label className="text-sm font-medium">パスワード</label>
-          <input
+          {errors.email && <FieldError>{errors.email.message}</FieldError>}
+        </TextField>
+        <TextField isInvalid={!!errors.password} name="password">
+          <Label>パスワード</Label>
+          <Input
             {...register("password")}
+            fullWidth
             type="password"
             autoComplete="new-password"
-            className="w-full border border-divider rounded-lg px-3 py-2 mt-1 bg-background text-sm focus:outline-none focus:border-primary"
+            placeholder="8文字以上"
           />
-          {errors.password && (
-            <p className="text-danger text-xs mt-1">
-              {errors.password.message}
-            </p>
-          )}
-        </div>
-        <div>
-          <label className="text-sm font-medium">パスワード（確認）</label>
-          <input
+          {errors.password && <FieldError>{errors.password.message}</FieldError>}
+        </TextField>
+        <TextField isInvalid={!!errors.passwordConfirm} name="passwordConfirm">
+          <Label>パスワード（確認）</Label>
+          <Input
             {...register("passwordConfirm")}
+            fullWidth
             type="password"
             autoComplete="new-password"
-            className="w-full border border-divider rounded-lg px-3 py-2 mt-1 bg-background text-sm focus:outline-none focus:border-primary"
+            placeholder="もう一度入力"
           />
-          {errors.passwordConfirm && (
-            <p className="text-danger text-xs mt-1">
-              {errors.passwordConfirm.message}
-            </p>
-          )}
-        </div>
+          {errors.passwordConfirm && <FieldError>{errors.passwordConfirm.message}</FieldError>}
+        </TextField>
         {errors.root && (
           <p className="text-danger text-sm">{errors.root.message}</p>
         )}
-        <button
+        <Button
           type="submit"
-          disabled={loading}
-          className="bg-primary text-white rounded-lg py-2 font-medium disabled:opacity-50 mt-2"
+          variant="primary"
+          fullWidth
+          isDisabled={loading}
+          isPending={loading}
+          className="mt-2"
         >
-          {loading ? "登録中..." : "新規登録"}
-        </button>
+          {({isPending}) => isPending ? <><Spinner color="current" size="sm" />登録中...</> : "新規登録"}
+        </Button>
       </form>
       <p className="text-center text-sm mt-4 text-default-500">
         すでにアカウントをお持ちの方は{" "}
