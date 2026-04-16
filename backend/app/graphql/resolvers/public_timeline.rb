@@ -9,11 +9,9 @@ module Resolvers
     def resolve(first:, after: nil)
       authenticate!
 
-      paginate_relation(Tweet.includes(:user), first: first, after: after)
+      paginate_relation(Tweet.all, first: first, after: after)
     rescue GraphQL::ExecutionError
       raise
-    rescue StandardError
-      raise_validation_error!("Failed to fetch public timeline")
     end
   end
 end

@@ -11,15 +11,17 @@ module Resolvers
       authenticate!
 
       user = User.find_by!(uuid: uuid)
-      followed_ids = Follow.where(follower_id: user.id).select(:followed_id)
-      relation = User.where(id: followed_ids)
-      paginate_relation(relation, first: first, after: after)
+      relation = User
+        .with_attached_avatar
+        .joins("INNER JOIN follows ON follows.followed_id = users.id")
+        .where(follows: { follower_id: user.id })
+        .select("users.*, follows.created_at AS cursor_created_at, follows.id AS cursor_id")
+
+      paginate_relation(relation, first: first, after: after, paging_by: :follows)
     rescue GraphQL::ExecutionError
       raise
     rescue ActiveRecord::RecordNotFound
       raise_not_found!("User not found")
-    rescue StandardError
-      raise_validation_error!("Failed to fetch following users")
     end
   end
 end

@@ -13,8 +13,6 @@ module Resolvers
       raise
     rescue ActiveRecord::RecordNotFound
       raise_not_found!("User not found")
-    rescue StandardError
-      raise_validation_error!("Failed to fetch user")
     end
   end
 end

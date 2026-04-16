@@ -9,13 +9,14 @@ module Resolvers
     def resolve(first:, after: nil)
       current_user = authenticate!
 
-      tweet_ids = current_user.likes.order(created_at: :desc).select(:tweet_id)
-      relation = Tweet.where(id: tweet_ids).includes(:user)
-      paginate_relation(relation, first: first, after: after)
+      relation = Tweet
+        .joins(:likes)
+        .where(likes: { user_id: current_user.id })
+        .select("tweets.*, likes.created_at AS cursor_created_at, likes.id AS cursor_id")
+
+      paginate_relation(relation, first: first, after: after, paging_by: :likes)
     rescue GraphQL::ExecutionError
       raise
-    rescue StandardError
-      raise_validation_error!("Failed to fetch liked tweets")
     end
   end
 end

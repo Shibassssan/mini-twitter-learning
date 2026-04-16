@@ -11,13 +11,11 @@ module Resolvers
       authenticate!
 
       user = User.find_by!(uuid: uuid)
-      paginate_relation(user.tweets.includes(:user), first: first, after: after)
+      paginate_relation(user.tweets, first: first, after: after)
     rescue GraphQL::ExecutionError
       raise
     rescue ActiveRecord::RecordNotFound
       raise_not_found!("User not found")
-    rescue StandardError
-      raise_validation_error!("Failed to fetch user tweets")
     end
   end
 end
