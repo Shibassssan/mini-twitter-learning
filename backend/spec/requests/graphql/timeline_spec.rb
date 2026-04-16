@@ -33,4 +33,15 @@ RSpec.describe "GraphQL timeline", type: :request do
     expect(body.dig("data", "timeline", "edges")).to eq([])
     expect(body.dig("data", "timeline", "pageInfo", "hasNextPage")).to eq(false)
   end
+
+  it "returns an authentication error when unauthenticated" do
+    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
+
+    post "/graphql", params: { query: query, operationName: "Timeline" }
+
+    body = JSON.parse(response.body)
+
+    expect(body.dig("data", "timeline")).to be_nil
+    expect(body["errors"].first["extensions"]["code"]).to eq("AUTHENTICATION_ERROR")
+  end
 end

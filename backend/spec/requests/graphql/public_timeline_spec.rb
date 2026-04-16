@@ -77,4 +77,19 @@ RSpec.describe "GraphQL publicTimeline", type: :request do
     expect(second_page_edges.length).to eq(1)
     expect(second_page_edges.first.dig("node", "content")).to eq(tweets.first.content)
   end
+
+  it "returns an authentication error when unauthenticated" do
+    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(nil)
+
+    post "/graphql", params: {
+      query: query,
+      variables: { first: 10 }.to_json,
+      operationName: "PublicTimeline"
+    }
+
+    body = JSON.parse(response.body)
+
+    expect(body.dig("data", "publicTimeline")).to be_nil
+    expect(body["errors"].first["extensions"]["code"]).to eq("AUTHENTICATION_ERROR")
+  end
 end

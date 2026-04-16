@@ -95,4 +95,33 @@ RSpec.describe "GraphQL searchTweets", type: :request do
     expect(body.dig("data", "searchTweets")).to be_nil
     expect(body["errors"].first["extensions"]["code"]).to eq("VALIDATION_ERROR")
   end
+
+  it "paginates results" do
+    allow_any_instance_of(GraphqlController).to receive(:current_user).and_return(user)
+
+    post "/graphql", params: {
+      query: query,
+      variables: { query: "e", first: 2 }.to_json,
+      operationName: "SearchTweets"
+    }
+
+    body = JSON.parse(response.body)
+
+    expect(body["errors"]).to be_nil
+    expect(body.dig("data", "searchTweets", "edges").length).to eq(2)
+    expect(body.dig("data", "searchTweets", "pageInfo", "hasNextPage")).to eq(true)
+
+    end_cursor = body.dig("data", "searchTweets", "pageInfo", "endCursor")
+
+    post "/graphql", params: {
+      query: query,
+      variables: { query: "e", first: 2, after: end_cursor }.to_json,
+      operationName: "SearchTweets"
+    }
+
+    body = JSON.parse(response.body)
+
+    expect(body["errors"]).to be_nil
+    expect(body.dig("data", "searchTweets", "edges").length).to be >= 1
+  end
 end
