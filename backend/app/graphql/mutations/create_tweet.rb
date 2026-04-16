@@ -11,7 +11,11 @@ module Mutations
 
       tweet = user.post_tweet!(content)
 
-      MiniTwitterSchema.subscriptions.trigger(:tweet_added, {}, tweet)
+      begin
+        MiniTwitterSchema.subscriptions.trigger(:tweet_added, {}, tweet)
+      rescue => e
+        Rails.logger.error("Subscription broadcast failed (tweet_added): #{e.class}: #{e.message}")
+      end
 
       tweet
     end

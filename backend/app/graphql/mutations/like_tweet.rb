@@ -12,12 +12,16 @@ module Mutations
 
       tweet = user.like_tweet!(tweet)
 
-      MiniTwitterSchema.subscriptions.trigger(
-        :tweet_like_updated,
-        { tweet_id: tweet.uuid },
-        tweet,
-        scope: tweet.uuid
-      )
+      begin
+        MiniTwitterSchema.subscriptions.trigger(
+          :tweet_like_updated,
+          { tweet_id: tweet.uuid },
+          tweet,
+          scope: tweet.uuid
+        )
+      rescue => e
+        Rails.logger.error("Subscription broadcast failed (tweet_like_updated): #{e.class}: #{e.message}")
+      end
 
       tweet
     rescue ActiveRecord::RecordNotFound
