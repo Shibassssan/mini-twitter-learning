@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { Button, Input, Tabs } from '@heroui/react'
 import { useUiStore } from '@/lib/stores/uiStore'
 import { useDebounce } from '@/lib/hooks/useDebounce'
 import { UserSearchResults } from '@/components/user/UserSearchResults'
@@ -16,77 +17,88 @@ function SearchPage() {
   const { activeSearchTab, setActiveSearchTab } = useUiStore()
 
   return (
-    <div>
+    <Tabs
+      variant="secondary"
+      selectedKey={activeSearchTab}
+      onSelectionChange={(key) => setActiveSearchTab(key as 'users' | 'tweets')}
+    >
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-divider">
         <div className="px-4 py-2">
           <div className="relative">
             <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-default-400 pointer-events-none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-default-400 pointer-events-none z-10"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
+              role="img"
+              aria-label="検索"
             >
+              <title>検索</title>
               <circle cx={11} cy={11} r={8} />
               <line x1={21} y1={21} x2={16.65} y2={16.65} />
             </svg>
-            <input
+            <Input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="キーワードを検索"
-              className="w-full rounded-full bg-default-100 py-2 pl-10 pr-10 text-sm outline-none focus:ring-2 focus:ring-primary"
+              fullWidth
+              className="[&_input]:rounded-full [&_input]:pl-10 [&_input]:pr-10"
             />
             {inputValue && (
-              <button
-                type="button"
-                onClick={() => setInputValue('')}
+              <Button
+                variant="ghost"
+                isIconOnly
+                size="sm"
+                aria-label="検索キーワードを消去"
+                onPress={() => setInputValue('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-default-400 hover:text-foreground"
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  role="img"
+                  aria-hidden
+                >
+                  <title>消去</title>
                   <line x1={18} y1={6} x2={6} y2={18} />
                   <line x1={6} y1={6} x2={18} y2={18} />
                 </svg>
-              </button>
+              </Button>
             )}
           </div>
         </div>
 
-        <div className="flex">
-          <button
-            type="button"
-            onClick={() => setActiveSearchTab('users')}
-            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeSearchTab === 'users'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-default-500'
-            }`}
-          >
-            ユーザー
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSearchTab('tweets')}
-            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeSearchTab === 'tweets'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-default-500'
-            }`}
-          >
-            ツイート
-          </button>
-        </div>
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="検索カテゴリ">
+            <Tabs.Tab id="users">ユーザー</Tabs.Tab>
+            <Tabs.Tab id="tweets">ツイート</Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
       </div>
 
-      {!debouncedQuery ? (
-        <EmptyState message="キーワードを入力して検索" />
-      ) : activeSearchTab === 'users' ? (
-        <UserSearchResults query={debouncedQuery} />
-      ) : (
-        <TweetSearchResults query={debouncedQuery} />
-      )}
-    </div>
+      <Tabs.Panel id="users">
+        {!debouncedQuery ? (
+          <EmptyState message="キーワードを入力して検索" />
+        ) : (
+          <UserSearchResults query={debouncedQuery} />
+        )}
+      </Tabs.Panel>
+      <Tabs.Panel id="tweets">
+        {!debouncedQuery ? (
+          <EmptyState message="キーワードを入力して検索" />
+        ) : (
+          <TweetSearchResults query={debouncedQuery} />
+        )}
+      </Tabs.Panel>
+    </Tabs>
   )
 }

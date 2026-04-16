@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@apollo/client/react'
+import { Button, Tabs } from '@heroui/react'
 import { UserByUsernameDocument } from '@/lib/graphql/generated/graphql'
 import { FollowersList } from '@/components/user/FollowersList'
 import { FollowingList } from '@/components/user/FollowingList'
@@ -42,52 +43,39 @@ function ConnectionsPage() {
   const user = data.userByUsername
 
   return (
-    <div>
+    <Tabs
+      variant="secondary"
+      selectedKey={activeTab}
+      onSelectionChange={(key) => handleTabChange(key as Tab)}
+    >
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-divider">
         <div className="flex items-center gap-4 px-4 py-2">
-          <button
-            type="button"
-            onClick={() => navigate({ to: '/users/$username', params: { username } })}
-            className="text-default-500 hover:text-foreground"
+          <Button
+            variant="ghost"
+            size="sm"
+            onPress={() => navigate({ to: '/users/$username', params: { username } })}
           >
             ← 戻る
-          </button>
+          </Button>
           <div>
             <h1 className="text-lg font-bold">{user.displayName}</h1>
             <p className="text-xs text-default-400">@{username}</p>
           </div>
         </div>
-        <div className="flex">
-          <button
-            type="button"
-            onClick={() => handleTabChange('followers')}
-            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'followers'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-default-500'
-            }`}
-          >
-            フォロワー
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabChange('following')}
-            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'following'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-default-500'
-            }`}
-          >
-            フォロー中
-          </button>
-        </div>
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="フォロー関係">
+            <Tabs.Tab id="followers">フォロワー</Tabs.Tab>
+            <Tabs.Tab id="following">フォロー中</Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
       </div>
 
-      {activeTab === 'followers' ? (
+      <Tabs.Panel id="followers">
         <FollowersList userUuid={user.id} />
-      ) : (
+      </Tabs.Panel>
+      <Tabs.Panel id="following">
         <FollowingList userUuid={user.id} />
-      )}
-    </div>
+      </Tabs.Panel>
+    </Tabs>
   )
 }

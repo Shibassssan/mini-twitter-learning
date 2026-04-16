@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Tabs } from '@heroui/react'
 import { useUiStore } from '@/lib/stores/uiStore'
 import { FollowingTimeline } from '@/components/tweet/FollowingTimeline'
 import { GlobalTimeline } from '@/components/tweet/GlobalTimeline'
@@ -13,40 +14,33 @@ function HomePage() {
   const { activeTimelineTab, setActiveTimelineTab } = useUiStore()
 
   return (
-    <div>
+    <Tabs
+      variant="secondary"
+      selectedKey={activeTimelineTab}
+      onSelectionChange={(key) => setActiveTimelineTab(key as 'following' | 'global')}
+    >
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-divider">
         <h1 className="px-4 py-3 text-xl font-bold hidden md:block">ホーム</h1>
-        <div className="flex">
-          <button
-            onClick={() => setActiveTimelineTab('following')}
-            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTimelineTab === 'following'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-default-500'
-            }`}
-          >
-            フォロー中
-          </button>
-          <button
-            onClick={() => setActiveTimelineTab('global')}
-            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTimelineTab === 'global'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-default-500'
-            }`}
-          >
-            全体
-          </button>
-        </div>
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="タイムライン">
+            <Tabs.Tab id="following">フォロー中</Tabs.Tab>
+            <Tabs.Tab id="global">全体</Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
       </div>
 
       <div className="hidden md:block">
         <TweetComposer />
       </div>
 
-      {activeTimelineTab === 'following' ? <FollowingTimeline /> : <GlobalTimeline />}
+      <Tabs.Panel id="following">
+        <FollowingTimeline />
+      </Tabs.Panel>
+      <Tabs.Panel id="global">
+        <GlobalTimeline />
+      </Tabs.Panel>
 
       <FAB />
-    </div>
+    </Tabs>
   )
 }
