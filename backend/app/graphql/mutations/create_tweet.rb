@@ -9,12 +9,7 @@ module Mutations
     def resolve(content:)
       user = authenticate!
 
-      tweet = ActiveRecord::Base.transaction do
-        Tweet.create!(
-          user: user,
-          content: content.strip
-        )
-      end
+      tweet = user.post_tweet!(content)
 
       MiniTwitterSchema.subscriptions.trigger(:tweet_added, {}, tweet)
 

@@ -9,14 +9,9 @@ module Mutations
     def resolve(uuid:)
       user = authenticate!
 
-      ActiveRecord::Base.transaction do
-        tweet = Tweet.find_by!(uuid: uuid)
-        raise_authorization_error! unless tweet.user_id == user.id
-
-        tweet.destroy!
-      end
-
-      true
+      user.destroy_tweet_by_uuid!(uuid)
+    rescue User::NotAuthorizedToModifyTweet
+      raise_authorization_error!
     rescue ActiveRecord::RecordNotFound
       raise_not_found!("Tweet not found")
     end

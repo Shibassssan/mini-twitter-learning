@@ -10,10 +10,7 @@ module Mutations
       user = authenticate!
       tweet = Tweet.find_by!(uuid: tweet_uuid)
 
-      tweet = ActiveRecord::Base.transaction do
-        Like.create!(user: user, tweet: tweet)
-        tweet.reload
-      end
+      tweet = user.like_tweet!(tweet)
 
       MiniTwitterSchema.subscriptions.trigger(
         :tweet_like_updated,

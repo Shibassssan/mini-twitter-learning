@@ -10,15 +10,10 @@ module Resolvers
     def resolve(query:, first:, after: nil)
       authenticate!
 
-      q = query.strip
-      raise_validation_error!("Search query must be at least 3 characters") if q.length < 3
-
-      sanitized = ActiveRecord::Base.sanitize_sql_like(q)
-      relation = User.with_attached_avatar.where(
-        "username ILIKE :q OR display_name ILIKE :q",
-        q: "%#{sanitized}%"
-      )
+      relation = User.search_profiles_substring(query)
       paginate_relation(relation, first: first, after: after)
+    rescue ArgumentError => e
+      raise_validation_error!(e.message)
     rescue GraphQL::ExecutionError
       raise
     end

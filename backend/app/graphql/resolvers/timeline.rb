@@ -9,9 +9,11 @@ module Resolvers
     def resolve(first:, after: nil)
       current_user = authenticate!
 
-      followed_ids = Follow.where(follower_id: current_user.id).select(:followed_id)
-      relation = Tweet.where(user_id: followed_ids)
-      paginate_relation(relation, first: first, after: after)
+      paginate_relation(
+        current_user.following_timeline_tweets,
+        first: first,
+        after: after
+      )
     rescue GraphQL::ExecutionError
       raise
     end

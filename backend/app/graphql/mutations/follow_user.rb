@@ -10,12 +10,7 @@ module Mutations
       current_user = authenticate!
       target_user = User.find_by!(uuid: user_uuid)
 
-      raise_validation_error!("Cannot follow yourself") if current_user.id == target_user.id
-
-      ActiveRecord::Base.transaction do
-        Follow.create!(follower: current_user, followed: target_user)
-        target_user.reload
-      end
+      current_user.follow!(target_user)
     rescue ActiveRecord::RecordNotFound
       raise_not_found!("User not found")
     rescue ActiveRecord::RecordNotUnique

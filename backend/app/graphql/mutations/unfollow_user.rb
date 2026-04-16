@@ -10,11 +10,7 @@ module Mutations
       current_user = authenticate!
       target_user = User.find_by!(uuid: user_uuid)
 
-      ActiveRecord::Base.transaction do
-        follow = Follow.find_by!(follower: current_user, followed: target_user)
-        follow.destroy!
-        target_user.reload
-      end
+      current_user.unfollow!(target_user)
     rescue ActiveRecord::RecordNotFound
       raise_not_found!("Follow relationship not found")
     end

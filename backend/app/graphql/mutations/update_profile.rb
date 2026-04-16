@@ -14,12 +14,9 @@ module Mutations
       permitted[:display_name] = args[:display_name] if args.key?(:display_name)
       permitted[:bio] = args[:bio] if args.key?(:bio)
 
-      raise_validation_error!("No attributes to update") if permitted.empty?
-
-      ActiveRecord::Base.transaction do
-        user.update!(permitted)
-        user
-      end
+      user.update_profile!(permitted)
+    rescue ArgumentError => e
+      raise_validation_error!(e.message)
     rescue ActiveRecord::RecordInvalid => e
       raise_validation_error!(e.record.errors.full_messages.join(", "))
     end
