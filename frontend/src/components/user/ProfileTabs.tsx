@@ -23,7 +23,7 @@ export function ProfileTabs({ userId, isOwnProfile }: ProfileTabsProps) {
     >
       <Tabs.ListContainer>
         <Tabs.List aria-label="プロフィールタブ">
-          <Tabs.Tab id="tweets">ツイート</Tabs.Tab>
+          <Tabs.Tab id="tweets">投稿</Tabs.Tab>
           {isOwnProfile && <Tabs.Tab id="likes">いいね</Tabs.Tab>}
         </Tabs.List>
       </Tabs.ListContainer>

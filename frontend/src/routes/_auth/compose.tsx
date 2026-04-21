@@ -19,7 +19,7 @@ function ComposePage() {
         >
           ← 戻る
         </Button>
-        <h1 className="text-lg font-bold">ツイート作成</h1>
+        <h1 className="text-lg font-bold">投稿を作成</h1>
       </div>
       <TweetComposer onSuccess={() => navigate({ to: '/' })} />
     </div>

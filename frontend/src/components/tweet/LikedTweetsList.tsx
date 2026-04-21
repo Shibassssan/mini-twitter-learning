@@ -41,7 +41,7 @@ export function LikedTweetsList() {
       hasNextPage={pageInfo?.hasNextPage ?? false}
       loading={loading}
       onLoadMore={onLoadMore}
-      emptyMessage="いいねしたツイートはありません"
+      emptyMessage="いいねした投稿はありません"
     />
   )
 }

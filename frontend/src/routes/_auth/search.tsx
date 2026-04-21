@@ -78,7 +78,7 @@ function SearchPage() {
         <Tabs.ListContainer>
           <Tabs.List aria-label="検索カテゴリ">
             <Tabs.Tab id="users">ユーザー</Tabs.Tab>
-            <Tabs.Tab id="tweets">ツイート</Tabs.Tab>
+            <Tabs.Tab id="tweets">投稿</Tabs.Tab>
           </Tabs.List>
         </Tabs.ListContainer>
       </div>

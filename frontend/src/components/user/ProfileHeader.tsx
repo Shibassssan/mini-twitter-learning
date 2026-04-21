@@ -74,7 +74,7 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
 
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm">
           <span className="font-bold">{user.tweetsCount}</span>
-          <span className="text-default-500">ツイート</span>
+          <span className="text-muted">投稿</span>
           <Link
             to="/users/$username/connections"
             params={{ username: user.username }}

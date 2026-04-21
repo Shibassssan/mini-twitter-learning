@@ -46,7 +46,7 @@ export function TweetSearchResults({ query }: TweetSearchResultsProps) {
       hasNextPage={pageInfo?.hasNextPage ?? false}
       loading={loading}
       onLoadMore={onLoadMore}
-      emptyMessage="ツイートが見つかりませんでした"
+      emptyMessage="投稿が見つかりませんでした"
     />
   )
 }

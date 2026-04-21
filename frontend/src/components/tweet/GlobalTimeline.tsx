@@ -6,7 +6,7 @@ export function GlobalTimeline() {
     <TimelineList
       document={PublicTimelineDocument}
       dataKey="publicTimeline"
-      emptyMessage="まだツイートはありません"
+      emptyMessage="まだ投稿はありません"
     />
   )
 }

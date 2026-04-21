@@ -6,7 +6,7 @@ export function FollowingTimeline() {
     <TimelineList
       document={TimelineDocument}
       dataKey="timeline"
-      emptyMessage="フォロー中のユーザーのツイートはありません"
+      emptyMessage="フォロー中のユーザーの投稿はありません"
       newTweetFilter="following"
     />
   )

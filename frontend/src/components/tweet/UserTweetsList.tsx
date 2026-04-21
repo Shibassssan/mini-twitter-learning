@@ -44,7 +44,7 @@ export function UserTweetsList({ userId }: UserTweetsListProps) {
       hasNextPage={pageInfo?.hasNextPage ?? false}
       loading={loading}
       onLoadMore={onLoadMore}
-      emptyMessage="まだツイートはありません"
+      emptyMessage="まだ投稿はありません"
     />
   )
 }
