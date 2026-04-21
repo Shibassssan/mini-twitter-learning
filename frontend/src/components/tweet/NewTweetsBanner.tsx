@@ -11,7 +11,7 @@ export function NewTweetsBanner({ count, onRefresh }: NewTweetsBannerProps) {
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      className="sticky top-0 z-20 flex justify-center py-2 px-3 sm:px-4 bg-primary/15 border-b border-divider backdrop-blur-sm min-h-[3rem]"
+      className="sticky top-0 z-20 flex justify-center py-2 px-3 sm:px-4 min-h-[3rem]"
     >
       {count > 0 ? (
         <Button
@@ -20,7 +20,7 @@ export function NewTweetsBanner({ count, onRefresh }: NewTweetsBannerProps) {
           onPress={onRefresh}
           className="rounded-full shadow-sm font-semibold"
         >
-          {count}件の新しいツイートを表示
+          {count}件の新しい投稿を表示
         </Button>
       ) : null}
     </div>

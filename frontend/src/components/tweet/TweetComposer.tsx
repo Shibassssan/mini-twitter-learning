@@ -2,9 +2,12 @@ import { useMutation } from '@apollo/client/react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, TextArea, Spinner } from '@heroui/react'
+import { useAuthStore } from '@/lib/stores/authStore'
 import { CreateTweetDocument } from '@/lib/graphql/generated/graphql'
 import { extractGqlErrorMessage } from '@/lib/utils/graphqlError'
 import { tweetSchema, type TweetFormValues } from '@/lib/validations/tweet'
+import { FormErrorMessage } from '@/components/ui/FormErrorMessage'
+import { InitialsAvatar } from '@/components/ui/InitialsAvatar'
 
 interface TweetComposerProps {
   onSuccess?: () => void
@@ -12,6 +15,7 @@ interface TweetComposerProps {
 }
 
 export function TweetComposer({ onSuccess, refetchQueries }: TweetComposerProps) {
+  const { user } = useAuthStore()
   const {
     register,
     handleSubmit,
@@ -43,51 +47,64 @@ export function TweetComposer({ onSuccess, refetchQueries }: TweetComposerProps)
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="p-3 sm:p-4 border-b border-divider">
-      <TextArea
-        fullWidth
-        {...register('content')}
-        aria-label="ツイート内容"
-        aria-invalid={errors.content ? true : undefined}
-        aria-describedby={errors.content ? 'tweet-content-error' : undefined}
-        placeholder="いまどうしてる？"
-        rows={3}
-        maxLength={300}
-        style={{ resize: 'none' }}
-        className={errors.content ? 'border-danger' : undefined}
-      />
-      {errors.content?.message && (
-        <p id="tweet-content-error" role="alert" className="text-danger text-xs mt-1">
-          {errors.content.message}
-        </p>
-      )}
-      {errors.root?.message && (
-        <p role="alert" className="text-danger text-xs mt-1">
-          {errors.root.message}
-        </p>
-      )}
-      <div className="flex items-center justify-between mt-2">
-        <span className={`text-xs ${content.length > 280 ? 'text-danger' : 'text-default-400'}`}>
-          {content.length}/300
-        </span>
-        <Button
-          type="submit"
-          variant="primary"
-          size="sm"
-          isDisabled={!isValid || loading}
-          isPending={loading}
-        >
-          {({ isPending }) =>
-            isPending ? (
-              <>
-                <Spinner color="current" size="sm" />
-                投稿中...
-              </>
-            ) : (
-              'ツイート'
-            )
-          }
-        </Button>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="mx-3 my-2 rounded-2xl border border-border bg-surface shadow-sm p-4"
+    >
+      <div className="flex gap-3">
+        <InitialsAvatar
+          displayName={user?.displayName ?? '?'}
+          username={user?.username ?? ''}
+          size="md"
+        />
+
+        <div className="flex-1 min-w-0">
+          <TextArea
+            fullWidth
+            {...register('content')}
+            aria-label="投稿内容"
+            aria-invalid={errors.content ? true : undefined}
+            aria-describedby={errors.content ? 'post-content-error' : undefined}
+            placeholder="いまどんな気分？"
+            rows={3}
+            maxLength={300}
+            style={{ resize: 'none' }}
+            className={errors.content ? 'border-danger' : undefined}
+          />
+          <FormErrorMessage id="post-content-error" message={errors.content?.message} />
+          <FormErrorMessage message={errors.root?.message} />
+
+          <div className="flex items-center justify-between mt-3">
+            <span
+              className={`text-xs tabular-nums ${
+                content.length > 280 ? 'text-danger font-medium' : 'text-muted'
+              }`}
+            >
+              {content.length}
+              <span className="text-muted/60">/300</span>
+            </span>
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              isDisabled={!isValid || loading}
+              isPending={loading}
+              className="rounded-full px-5 font-semibold"
+            >
+              {({ isPending }) =>
+                isPending ? (
+                  <>
+                    <Spinner color="current" size="sm" />
+                    投稿中...
+                  </>
+                ) : (
+                  '投稿する'
+                )
+              }
+            </Button>
+          </div>
+        </div>
       </div>
     </form>
   )

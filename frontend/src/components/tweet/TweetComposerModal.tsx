@@ -14,7 +14,7 @@ export function TweetComposerModal() {
       <Modal.Backdrop isDismissable />
       <Modal.Container size="lg">
         <Modal.Dialog>
-          <Modal.Header>ツイートを作成</Modal.Header>
+          <Modal.Header>投稿を作成</Modal.Header>
           <Modal.Body className="pb-4">
             <TweetComposer onSuccess={() => setIsTweetModalOpen(false)} />
           </Modal.Body>
