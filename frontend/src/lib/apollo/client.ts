@@ -60,12 +60,14 @@ const errorLink = onError(({ error, operation, forward }) => {
       code === "UNAUTHORIZED" ||
       err.message?.toLowerCase().includes("authentication required")
     ) {
-      // refreshToken 自身が失敗した場合は再リフレッシュを試みずエラーを伝播させる
-      // (呼び出し元の .catch() に処理を委ねることでリダイレクトループを防ぐ)
+      // refreshToken 自身が失敗した場合はエラーを Observable として伝播させる
+      // (undefined を返すと Apollo Client 4 では resolve 扱いになることがあるため)
       if (operation.operationName === "RefreshToken") {
         pendingRequests = [];
         isRefreshing = false;
-        return;
+        return new Observable((observer) => {
+          observer.error(error);
+        });
       }
 
       if (isRefreshing) {
