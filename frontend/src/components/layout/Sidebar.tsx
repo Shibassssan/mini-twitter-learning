@@ -26,7 +26,7 @@ export function Sidebar() {
     <aside className="hidden md:flex flex-col w-[72px] lg:w-60 xl:w-64 shrink-0 sticky top-0 h-screen py-5 px-3 lg:px-5 border-r border-border/60">
       <div className="flex items-center gap-3 mb-8 px-2">
         <AppLogo />
-        <span className="text-xl font-bold text-foreground tracking-tight hidden lg:block">Ripple</span>
+        <span className="text-xl font-bold text-foreground tracking-tight hidden lg:block">MiniPost</span>
       </div>
 
       <nav className="flex flex-col gap-0.5 flex-1">

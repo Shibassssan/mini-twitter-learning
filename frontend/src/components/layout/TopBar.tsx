@@ -12,7 +12,7 @@ export function TopBar() {
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
           <AppLogo className="w-6 h-6 text-accent" />
-          <span className="text-base font-bold text-foreground tracking-tight">Ripple</span>
+          <span className="text-base font-bold text-foreground tracking-tight">MiniPost</span>
         </div>
 
         {user && (
