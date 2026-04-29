@@ -12,7 +12,7 @@ describe('TweetComposer', () => {
         <TweetComposer />
       </TestApolloProvider>,
     )
-    expect(screen.getByRole('button', { name: /ツイート/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '投稿する' })).toBeDisabled()
   })
 
   it('文字数カウンターと投稿成功でクリア', async () => {
@@ -49,10 +49,10 @@ describe('TweetComposer', () => {
         <TweetComposer onSuccess={onSuccess} refetchQueries={[]} />
       </TestApolloProvider>,
     )
-    const area = screen.getByPlaceholderText('いまどうしてる？')
+    const area = screen.getByPlaceholderText('いまどんな気分？')
     await user.type(area, 'hello')
-    expect(screen.getByText('5/300')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /ツイート/ }))
+    expect(screen.getByText('/300').parentElement).toHaveTextContent('5/300')
+    await user.click(screen.getByRole('button', { name: '投稿する' }))
     await waitFor(() => {
       expect(onSuccess).toHaveBeenCalled()
     })
@@ -79,8 +79,8 @@ describe('TweetComposer', () => {
         <TweetComposer refetchQueries={[]} />
       </TestApolloProvider>,
     )
-    await user.type(screen.getByPlaceholderText('いまどうしてる？'), 'x')
-    await user.click(screen.getByRole('button', { name: /ツイート/ }))
+    await user.type(screen.getByPlaceholderText('いまどんな気分？'), 'x')
+    await user.click(screen.getByRole('button', { name: '投稿する' }))
     expect(await screen.findByText(/投稿に失敗|失敗しました/)).toBeInTheDocument()
   })
 })
