@@ -1,10 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap');
 @import "@heroui/react/styles";
 
 @theme {
-  /* Indigo as the brand primary */
-  --color-primary: oklch(0.585 0.233 264);
-  --color-primary-hover: oklch(0.54 0.22 264);
+  --color-primary: #4f6ef7;
+  --color-primary-hover: #6b85ff;
 }
 
 /* Override accent to indigo, background to pure white */
@@ -15,9 +14,48 @@
 [data-theme="default"] {
   --accent: oklch(0.595 0.228 264);
   --accent-foreground: oklch(0.98 0.01 264);
-  --background: oklch(1 0 0);   /* pure white */
-  --surface: oklch(1 0 0);      /* card = white */
+  --background: oklch(1 0 0);
+  --surface: oklch(1 0 0);
   --surface-secondary: oklch(0.975 0.003 264);
+}
+
+/* MiniPost dark navy theme */
+.dark,
+[data-theme="dark"] {
+  --background: #080d18;
+  --foreground: #dde5f5;
+
+  --surface: #0e1525;
+  --surface-foreground: #dde5f5;
+  --surface-secondary: #141e30;
+  --surface-secondary-foreground: #dde5f5;
+  --surface-tertiary: #1a2540;
+  --surface-tertiary-foreground: #dde5f5;
+
+  --overlay: #0e1525;
+  --overlay-foreground: #dde5f5;
+
+  --muted: #7a91b8;
+  --scrollbar: #1e2d47;
+
+  --border: #1e2d47;
+  --separator: #16213a;
+
+  --default: #1a2540;
+  --default-foreground: #dde5f5;
+
+  --accent: #4f6ef7;
+  --accent-foreground: #ffffff;
+
+  --field-background: #141e30;
+  --field-foreground: #dde5f5;
+  --field-placeholder: #445578;
+
+  --danger: #e05555;
+  --danger-foreground: #ffffff;
+
+  --success: #4eca8b;
+  --success-foreground: #ffffff;
 }
 
 * {
