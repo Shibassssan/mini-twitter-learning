@@ -4,9 +4,16 @@ class ApplicationController < ActionController::API
 
   rescue_from JWTSessions::Errors::Unauthorized, with: :render_authentication_error
 
-  # GraphQL RefreshToken mutation 用（private の authorize_by_refresh_cookie! などを隠蔽）
+  # GraphQL RefreshToken mutation 用。
+  # authorize_by_refresh_cookie! はデフォルトで X-CSRF-Token ヘッダを要求するが、
+  # - access_token は Authorization: Bearer ヘッダ方式で Cookie 認証ではない
+  # - refresh_token Cookie に対する CSRF 対策は GraphqlController#verify_request_origin
+  #   による Origin/Referer 検証で担保済み
+  # のため、CSRF トークンチェックは明示的にスキップする。
   def verify_refresh_for_graphql!
-    authorize_by_refresh_cookie!
+    cookie_based_auth(:refresh)
+    @_csrf_check = false
+    authorize_request(:refresh)
     { payload: payload.to_h, token: found_token }
   end
 

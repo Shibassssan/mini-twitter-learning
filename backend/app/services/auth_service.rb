@@ -27,13 +27,31 @@ class AuthService
     end
 
     def issue_tokens_for(user)
-      session = JWTSessions::Session.new(payload: session_payload(user))
+      payload = session_payload(user)
+      # refresh_payload にも user_id を載せないと、refresh_token 単独では
+      # Mutations::RefreshToken がユーザーを特定できない（JWTSessions は
+      # refresh 時に login 時の payload を自動復元しないため）。
+      session = JWTSessions::Session.new(payload: payload, refresh_payload: payload)
       session.login
     end
 
     def refresh_access_token!(refresh_token, payload:)
-      session = JWTSessions::Session.new(payload: payload.symbolize_keys)
-      session.refresh(refresh_token)
+      # JWT の予約クレーム（exp/uid 等）を除外し、アプリ固有の user_id のみ引き継ぐ。
+      # これを渡さないと新しい access_token の exp/uid が既存値とバッティングする。
+      user_id = payload.with_indifferent_access.fetch("user_id")
+      new_payload = { user_id: user_id }
+
+      # JWTSessions#refresh は refresh_token を rotation しない（access_token のみ再発行）。
+      # セキュリティ上は refresh_token も必ず rotation したいので、
+      # 旧セッションを flush してから login し直すことで rotation を強制する。
+      flush_session = JWTSessions::Session.new
+      flush_session.flush_by_token(refresh_token)
+
+      session = JWTSessions::Session.new(
+        payload: new_payload,
+        refresh_payload: new_payload
+      )
+      session.login
     end
 
     def flush_refresh_token!(refresh_token)
@@ -46,6 +64,7 @@ class AuthService
         httponly: true,
         secure: Rails.env.production?,
         same_site: refresh_cookie_same_site,
+        path: "/",
         expires: JWTSessions.refresh_exp_time.seconds.from_now
       }
     end

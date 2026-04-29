@@ -14,6 +14,9 @@ module Mutations
       user = User.find(refresh_payload.fetch("user_id"))
       tokens = AuthService.refresh_access_token!(refresh_token, payload: refresh_payload)
 
+      # トークンローテーション: 旧トークンは無効化されるため新しいトークンをCookieにセット
+      set_refresh_cookie!(tokens[:refresh])
+
       {
         access_token: tokens[:access],
         user: user
