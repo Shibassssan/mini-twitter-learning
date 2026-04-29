@@ -13,15 +13,20 @@ export const Route = createFileRoute('/_auth/users/$username')({
 })
 
 function UserProfilePage() {
-  const { username } = Route.useParams()
   const { pathname } = useLocation()
+
+  if (pathname.endsWith('/connections')) return <Outlet />
+
+  return <UserProfileContent />
+}
+
+function UserProfileContent() {
+  const { username } = Route.useParams()
   const { user: me } = useAuthStore()
 
   const { data, loading, error } = useQuery(UserByUsernameDocument, {
     variables: { username },
   })
-
-  if (pathname.endsWith('/connections')) return <Outlet />
 
   if (error) return <ErrorMessage message={error.message} onRetry={() => window.location.reload()} />
   if (loading || !data) return <ProfileSkeleton />
