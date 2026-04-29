@@ -1,7 +1,7 @@
-import { useEffect, useId, useRef, useState } from 'react'
-import { useMutation } from '@apollo/client/react'
+import { useId, useRef } from 'react'
 import { Avatar, Spinner } from '@heroui/react'
-import { UpdateAvatarDocument } from '@/lib/graphql/generated/graphql'
+import { useAvatarUpload } from '@/lib/hooks/useAvatarUpload'
+import { AVATAR_ACCEPTED_TYPES, getInitials } from '@/lib/utils/avatar'
 
 interface AvatarUploaderProps {
   currentAvatarUrl?: string | null
@@ -9,9 +9,6 @@ interface AvatarUploaderProps {
   size?: 'sm' | 'lg'
   editable?: boolean
 }
-
-const MAX_FILE_SIZE = 2 * 1024 * 1024
-const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 export function AvatarUploader({
   currentAvatarUrl,
@@ -21,53 +18,12 @@ export function AvatarUploader({
 }: AvatarUploaderProps) {
   const fileInputId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
-  const [preview, setPreview] = useState<string | null>(null)
-  const objectUrlRef = useRef<string | null>(null)
-
-  const revokePreviewUrl = () => {
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current)
-      objectUrlRef.current = null
-    }
-  }
-
-  useEffect(() => {
-    return () => {
-      revokePreviewUrl()
-    }
-  }, [])
-
-  const [updateAvatar, { loading }] = useMutation(UpdateAvatarDocument, {
-    onCompleted: () => {
-      revokePreviewUrl()
-      setPreview(null)
-    },
-    refetchQueries: ['UserByUsername', 'Me'],
+  const { src, loading, handleFileChange } = useAvatarUpload({
+    currentAvatarUrl,
+    onValidationError: alert,
   })
 
-  const initials = displayName.slice(0, 2).toUpperCase()
-  const src = preview ?? currentAvatarUrl
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (!ACCEPTED_TYPES.includes(file.type)) {
-      alert('JPEG、PNG、WebP形式の画像を選択してください')
-      return
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      alert('ファイルサイズは2MB以下にしてください')
-      return
-    }
-
-    revokePreviewUrl()
-    const url = URL.createObjectURL(file)
-    objectUrlRef.current = url
-    setPreview(url)
-    updateAvatar({ variables: { avatar: file } })
-    e.target.value = ''
-  }
+  const initials = getInitials(displayName)
 
   const avatarSize = size === 'lg' ? 'lg' as const : 'md' as const
 
@@ -110,7 +66,7 @@ export function AvatarUploader({
           id={fileInputId}
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept={AVATAR_ACCEPTED_TYPES.join(',')}
           onChange={handleFileChange}
           className="sr-only"
         />

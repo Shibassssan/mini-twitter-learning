@@ -1,49 +1,35 @@
-import { useState, useEffect } from 'react'
-import { useMutation } from '@apollo/client/react'
 import { Modal, Button, TextField, Label, Input, TextArea, Description, useOverlayState } from '@heroui/react'
 import { useUiStore } from '@/lib/stores/uiStore'
-import { UpdateProfileDocument } from '@/lib/graphql/generated/graphql'
+import { BIO_MAX_LENGTH, useProfileEditForm } from '@/lib/hooks/useProfileEditForm'
 
 interface ProfileEditModalProps {
   user: { displayName: string; bio?: string | null }
 }
 
-const BIO_MAX_LENGTH = 200
-
 export function ProfileEditModal({ user }: ProfileEditModalProps) {
   const { isProfileEditOpen, setIsProfileEditOpen } = useUiStore()
-  const [displayName, setDisplayName] = useState(user.displayName)
-  const [bio, setBio] = useState(user.bio ?? '')
-
   const state = useOverlayState({
     isOpen: isProfileEditOpen,
     onOpenChange: setIsProfileEditOpen,
   })
+  const onClose = () => state.setOpen(false)
 
-  useEffect(() => {
-    if (isProfileEditOpen) {
-      setDisplayName(user.displayName)
-      setBio(user.bio ?? '')
-    }
-  }, [isProfileEditOpen, user.displayName, user.bio])
-
-  const [updateProfile, { loading }] = useMutation(UpdateProfileDocument, {
-    onCompleted: () => setIsProfileEditOpen(false),
-    refetchQueries: ['UserByUsername', 'Me'],
+  const {
+    displayName,
+    setDisplayName,
+    bio,
+    setBio,
+    isValid,
+    loading,
+    handleSubmit,
+  } = useProfileEditForm({
+    user,
+    isOpen: state.isOpen,
+    onClose,
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const trimmedName = displayName.trim()
-    if (!trimmedName) return
-    updateProfile({ variables: { displayName: trimmedName, bio: bio.trim() || null } })
-  }
-
-  const isValid = displayName.trim().length > 0
-
   return (
-    <Modal state={state}>
-      <Modal.Backdrop isDismissable />
+    <Modal.Backdrop isOpen={state.isOpen} onOpenChange={state.setOpen} isDismissable>
       <Modal.Container>
         <Modal.Dialog>
           <Modal.Header>プロフィールを編集</Modal.Header>
@@ -75,7 +61,7 @@ export function ProfileEditModal({ user }: ProfileEditModalProps) {
               <Button
                 type="button"
                 variant="ghost"
-                onPress={() => setIsProfileEditOpen(false)}
+                onPress={onClose}
               >
                 キャンセル
               </Button>
@@ -90,6 +76,6 @@ export function ProfileEditModal({ user }: ProfileEditModalProps) {
           </form>
         </Modal.Dialog>
       </Modal.Container>
-    </Modal>
+    </Modal.Backdrop>
   )
 }
