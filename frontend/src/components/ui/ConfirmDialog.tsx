@@ -27,8 +27,7 @@ export function ConfirmDialog({
   })
 
   return (
-    <Modal state={state}>
-      <Modal.Backdrop isDismissable />
+    <Modal.Backdrop isOpen={state.isOpen} onOpenChange={state.setOpen} isDismissable>
       <Modal.Container>
         <Modal.Dialog>
           <Modal.Header>{title}</Modal.Header>
@@ -45,6 +44,6 @@ export function ConfirmDialog({
           </Modal.Footer>
         </Modal.Dialog>
       </Modal.Container>
-    </Modal>
+    </Modal.Backdrop>
   )
 }

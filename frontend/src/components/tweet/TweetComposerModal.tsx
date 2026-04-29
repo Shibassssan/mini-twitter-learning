@@ -10,8 +10,7 @@ export function TweetComposerModal() {
   })
 
   return (
-    <Modal state={state}>
-      <Modal.Backdrop isDismissable />
+    <Modal.Backdrop isOpen={state.isOpen} onOpenChange={state.setOpen} isDismissable>
       <Modal.Container size="lg">
         <Modal.Dialog>
           <Modal.Header>投稿を作成</Modal.Header>
@@ -20,6 +19,6 @@ export function TweetComposerModal() {
           </Modal.Body>
         </Modal.Dialog>
       </Modal.Container>
-    </Modal>
+    </Modal.Backdrop>
   )
 }
