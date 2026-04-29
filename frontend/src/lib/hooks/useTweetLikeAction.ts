@@ -5,13 +5,13 @@ import {
   UnlikeTweetDocument,
 } from '@/lib/graphql/generated/graphql'
 
-interface TweetLikeTarget {
+type TweetLikeTarget = {
   id: string
   likesCount: number
   isLikedByMe: boolean
 }
 
-interface UseTweetLikeActionOptions {
+type UseTweetLikeActionOptions = {
   tweet: TweetLikeTarget
 }
 

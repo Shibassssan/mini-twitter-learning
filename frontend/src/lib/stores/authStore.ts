@@ -1,12 +1,12 @@
 import { create } from 'zustand'
 
-interface AuthUser {
+type AuthUser = {
   id: string
   username: string
   displayName: string
 }
 
-interface AuthState {
+type AuthState = {
   user: AuthUser | null
   accessToken: string | null
   isAuthenticated: boolean

@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { Avatar } from '@heroui/react'
 import { FollowButton } from './FollowButton'
 
-export interface UserCardData {
+export type UserCardData = {
   id: string
   username: string
   displayName: string
@@ -13,7 +13,7 @@ export interface UserCardData {
   followersCount?: number
 }
 
-interface UserCardProps {
+type UserCardProps = {
   user: UserCardData
 }
 

@@ -8,7 +8,7 @@ import { InfiniteScrollList } from '@/components/ui/InfiniteScrollList'
 
 const PAGE_SIZE = 20
 
-interface UserSearchResultsProps {
+type UserSearchResultsProps = {
   query: string
 }
 

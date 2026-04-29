@@ -1,6 +1,6 @@
 import { Modal, Button, useOverlayState } from '@heroui/react'
 
-interface ConfirmDialogProps {
+type ConfirmDialogProps = {
   isOpen: boolean
   onClose: () => void
   onConfirm: () => void

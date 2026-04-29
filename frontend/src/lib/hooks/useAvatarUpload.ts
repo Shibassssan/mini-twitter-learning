@@ -3,7 +3,7 @@ import { useMutation } from '@apollo/client/react'
 import { UpdateAvatarDocument } from '@/lib/graphql/generated/graphql'
 import { validateAvatarFile } from '@/lib/utils/avatar'
 
-interface UseAvatarUploadOptions {
+type UseAvatarUploadOptions = {
   currentAvatarUrl?: string | null
   onValidationError?: (message: string) => void
 }

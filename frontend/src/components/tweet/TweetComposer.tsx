@@ -9,7 +9,7 @@ import { tweetSchema, type TweetFormValues } from '@/lib/validations/tweet'
 import { FormErrorMessage } from '@/components/ui/FormErrorMessage'
 import { InitialsAvatar } from '@/components/ui/InitialsAvatar'
 
-interface TweetComposerProps {
+type TweetComposerProps = {
   onSuccess?: () => void
   refetchQueries?: string[]
 }

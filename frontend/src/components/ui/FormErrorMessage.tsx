@@ -1,4 +1,4 @@
-interface FormErrorMessageProps {
+type FormErrorMessageProps = {
   id?: string
   message?: string
 }

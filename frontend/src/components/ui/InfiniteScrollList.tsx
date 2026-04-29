@@ -3,7 +3,7 @@ import { Spinner } from '@heroui/react'
 import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
 import { EmptyState } from './EmptyState'
 
-interface InfiniteScrollListProps<T> {
+type InfiniteScrollListProps<T> = {
   items: T[]
   renderItem: (item: T) => React.ReactNode
   hasNextPage: boolean

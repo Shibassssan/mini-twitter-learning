@@ -1,4 +1,4 @@
-interface AppLogoProps {
+type AppLogoProps = {
   className?: string
 }
 

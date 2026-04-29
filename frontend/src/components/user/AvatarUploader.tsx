@@ -3,7 +3,7 @@ import { Avatar, Spinner } from '@heroui/react'
 import { useAvatarUpload } from '@/lib/hooks/useAvatarUpload'
 import { AVATAR_ACCEPTED_TYPES, getInitials } from '@/lib/utils/avatar'
 
-interface AvatarUploaderProps {
+type AvatarUploaderProps = {
   currentAvatarUrl?: string | null
   displayName: string
   size?: 'sm' | 'lg'

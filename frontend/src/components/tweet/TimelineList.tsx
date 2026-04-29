@@ -12,12 +12,12 @@ import { InfiniteScrollList } from '@/components/ui/InfiniteScrollList'
 
 const PAGE_SIZE = 20
 
-interface TimelineConnection {
+type TimelineConnection = {
   edges: Array<{ node: { id: string; [key: string]: unknown } }>
   pageInfo: { hasNextPage: boolean; endCursor?: string | null }
 }
 
-interface TimelineListProps<TData> {
+type TimelineListProps<TData> = {
   document: TypedDocumentNode<TData, { first?: number; after?: string }>
   dataKey: keyof TData
   emptyMessage: string

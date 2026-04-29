@@ -2,7 +2,7 @@ import { Modal, Button, TextField, Label, Input, TextArea, Description, useOverl
 import { useUiStore } from '@/lib/stores/uiStore'
 import { BIO_MAX_LENGTH, useProfileEditForm } from '@/lib/hooks/useProfileEditForm'
 
-interface ProfileEditModalProps {
+type ProfileEditModalProps = {
   user: { displayName: string; bio?: string | null }
 }
 

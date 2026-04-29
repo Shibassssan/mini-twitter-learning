@@ -5,7 +5,7 @@ const GRADIENTS = [
   'from-blue-500 to-cyan-500',
 ]
 
-interface InitialsAvatarProps {
+type InitialsAvatarProps = {
   displayName: string
   username: string
   avatarUrl?: string | null

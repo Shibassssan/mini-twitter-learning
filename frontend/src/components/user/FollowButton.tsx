@@ -4,7 +4,7 @@ import { Button } from '@heroui/react'
 import { FollowUserDocument, UnfollowUserDocument } from '@/lib/graphql/generated/graphql'
 import { useAuthStore } from '@/lib/stores/authStore'
 
-interface FollowButtonProps {
+type FollowButtonProps = {
   userId: string
   isFollowedByMe: boolean
   username: string

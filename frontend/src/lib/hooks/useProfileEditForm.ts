@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useMutation } from '@apollo/client/react'
 import { UpdateProfileDocument } from '@/lib/graphql/generated/graphql'
 
-interface UseProfileEditFormOptions {
+type UseProfileEditFormOptions = {
   user: { displayName: string; bio?: string | null }
   isOpen: boolean
   onClose: () => void

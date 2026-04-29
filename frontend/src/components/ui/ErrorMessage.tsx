@@ -1,6 +1,6 @@
 import { Button } from '@heroui/react'
 
-interface ErrorMessageProps {
+type ErrorMessageProps = {
   message?: string
   onRetry?: () => void
 }

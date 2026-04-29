@@ -1,4 +1,4 @@
-interface EmptyStateProps {
+type EmptyStateProps = {
   message?: string
 }
 

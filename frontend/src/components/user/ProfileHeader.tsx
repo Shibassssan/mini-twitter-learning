@@ -9,7 +9,7 @@ import type { UserByUsernameQuery } from '@/lib/graphql/generated/graphql'
 
 type ProfileUser = UserByUsernameQuery['userByUsername']
 
-interface ProfileHeaderProps {
+type ProfileHeaderProps = {
   user: ProfileUser
 }
 

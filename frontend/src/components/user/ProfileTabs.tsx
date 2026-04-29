@@ -3,7 +3,7 @@ import { useUiStore } from '@/lib/stores/uiStore'
 import { UserTweetsList } from '@/components/tweet/UserTweetsList'
 import { LikedTweetsList } from '@/components/tweet/LikedTweetsList'
 
-interface ProfileTabsProps {
+type ProfileTabsProps = {
   userId: string
   isOwnProfile: boolean
 }

@@ -5,7 +5,7 @@ import 'dayjs/locale/ja'
 dayjs.extend(relativeTime)
 dayjs.locale('ja')
 
-interface TimeDisplayProps {
+type TimeDisplayProps = {
   createdAt: string
 }
 

@@ -1,6 +1,6 @@
 import { Button } from '@heroui/react'
 
-interface NewTweetsBannerProps {
+type NewTweetsBannerProps = {
   count: number
   onRefresh: () => void
 }

@@ -1,11 +1,11 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { Button } from '@heroui/react'
 
-interface Props {
+type Props = {
   children: ReactNode
 }
 
-interface State {
+type State = {
   hasError: boolean
   error: Error | null
 }

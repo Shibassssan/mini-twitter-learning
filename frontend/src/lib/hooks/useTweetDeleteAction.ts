@@ -2,11 +2,11 @@ import { useCallback, useState } from 'react'
 import { useMutation } from '@apollo/client/react'
 import { DeleteTweetDocument } from '@/lib/graphql/generated/graphql'
 
-interface TweetDeleteTarget {
+type TweetDeleteTarget = {
   id: string
 }
 
-interface UseTweetDeleteActionOptions {
+type UseTweetDeleteActionOptions = {
   tweet: TweetDeleteTarget
   onDelete?: (id: string) => void
 }

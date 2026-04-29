@@ -8,7 +8,7 @@ import { useTweetDeleteAction } from "@/lib/hooks/useTweetDeleteAction";
 import { useTweetLikeAction } from "@/lib/hooks/useTweetLikeAction";
 import { useAuthStore } from "@/lib/stores/authStore";
 
-export interface TweetCardData {
+export type TweetCardData = {
   id: string;
   content: string;
   createdAt: string;
@@ -22,7 +22,7 @@ export interface TweetCardData {
   };
 }
 
-interface TweetCardProps {
+type TweetCardProps = {
   tweet: TweetCardData;
   onDelete?: (id: string) => void;
 }

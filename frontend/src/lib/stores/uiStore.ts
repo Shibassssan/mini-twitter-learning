@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-interface UiState {
+type UiState = {
   isProfileEditOpen: boolean
   activeTimelineTab: 'following' | 'global'
   activeProfileTab: 'tweets' | 'likes'
