@@ -95,6 +95,14 @@ RSpec.describe AuthService do
       expect(result[:access]).to be_present
       expect(result[:refresh]).to be_present
     end
+
+    it "embeds user_id into both access and refresh token payloads" do
+      result = described_class.issue_tokens_for(user)
+      access_payload = JWTSessions::Token.decode(result[:access], {}).first
+      refresh_payload = JWTSessions::Token.decode(result[:refresh], {}).first
+      expect(access_payload["user_id"]).to eq(user.id)
+      expect(refresh_payload["user_id"]).to eq(user.id)
+    end
   end
 
   describe ".refresh_access_token!" do
@@ -106,6 +114,17 @@ RSpec.describe AuthService do
         payload: payload
       )
       expect(new_tokens[:access]).to be_present
+    end
+
+    it "keeps user_id on the rotated refresh token" do
+      tokens = described_class.issue_tokens_for(user)
+      payload = JWTSessions::Token.decode(tokens[:refresh], {}).first
+      new_tokens = described_class.refresh_access_token!(
+        tokens[:refresh],
+        payload: payload
+      )
+      rotated_payload = JWTSessions::Token.decode(new_tokens[:refresh], {}).first
+      expect(rotated_payload["user_id"]).to eq(user.id)
     end
   end
 
