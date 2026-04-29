@@ -70,7 +70,7 @@ cd frontend && pnpm install && pnpm codegen
 - スキーマは `app/graphql/` 配下に集約。**Query / Mutation / Subscription / Types** を分離。
 - フィールドは **camelCase**（graphql-ruby のデフォルト）。Ruby コードは snake_case で書き、自動変換に任せる。
 - 認可は **Resolver / Mutation 単位** で実装し、Model 層には書かない（責務の混在防止）。
-- N+1 を避けるため、関連を引く際は必ず `graphql-batch` または `includes` を検討。
+- N+1 を避けるため、関連を引く際は必ず `GraphQL::Dataloader` Sources（`app/graphql/sources/` 配下の `RecordLoader` / `AssociationExistsLoader` など）または `includes` を検討。
 - スキーマ変更時は **必ず** フロント側の `pnpm codegen` を再実行し、生成ファイルの差分も同じ PR に含める。
 
 ### 4.2 認証
