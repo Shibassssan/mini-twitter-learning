@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Outlet, useLocation } from '@tanstack/react-router'
 import { useQuery } from '@apollo/client/react'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { UserByUsernameDocument } from '@/lib/graphql/generated/graphql'
@@ -14,11 +14,14 @@ export const Route = createFileRoute('/_auth/users/$username')({
 
 function UserProfilePage() {
   const { username } = Route.useParams()
+  const { pathname } = useLocation()
   const { user: me } = useAuthStore()
 
   const { data, loading, error } = useQuery(UserByUsernameDocument, {
     variables: { username },
   })
+
+  if (pathname.endsWith('/connections')) return <Outlet />
 
   if (error) return <ErrorMessage message={error.message} onRetry={() => window.location.reload()} />
   if (loading || !data) return <ProfileSkeleton />
