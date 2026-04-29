@@ -3,7 +3,12 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FollowButton } from '@/components/user/FollowButton'
 import { TestApolloProvider } from '@/test/mocks/apollo'
-import { FollowUserDocument, UnfollowUserDocument } from '@/lib/graphql/generated/graphql'
+import {
+  FollowersDocument,
+  FollowingDocument,
+  FollowUserDocument,
+  UnfollowUserDocument,
+} from '@/lib/graphql/generated/graphql'
 import { useAuthStore } from '@/lib/stores/authStore'
 
 vi.mock('@/lib/stores/authStore', () => ({
@@ -17,6 +22,47 @@ const baseProps = {
   followersCount: 10,
   followingCount: 5,
 }
+
+const connectionRefetchMocks = [
+  {
+    request: {
+      query: FollowersDocument,
+      variables: { uuid: 'user-target', first: 20 },
+    },
+    result: {
+      data: {
+        followers: {
+          __typename: 'UserConnection' as const,
+          edges: [],
+          pageInfo: {
+            __typename: 'PageInfo' as const,
+            hasNextPage: false,
+            endCursor: null,
+          },
+        },
+      },
+    },
+  },
+  {
+    request: {
+      query: FollowingDocument,
+      variables: { uuid: 'user-self', first: 20 },
+    },
+    result: {
+      data: {
+        following: {
+          __typename: 'UserConnection' as const,
+          edges: [],
+          pageInfo: {
+            __typename: 'PageInfo' as const,
+            hasNextPage: false,
+            endCursor: null,
+          },
+        },
+      },
+    },
+  },
+]
 
 function mockAuthUser(userId: string | null) {
   vi.mocked(useAuthStore).mockReturnValue({
@@ -55,6 +101,7 @@ describe('FollowButton', () => {
           },
         },
       },
+      ...connectionRefetchMocks,
     ]
     render(
       <TestApolloProvider mocks={mocks}>
@@ -86,6 +133,7 @@ describe('FollowButton', () => {
           },
         },
       },
+      ...connectionRefetchMocks,
     ]
     render(
       <TestApolloProvider mocks={mocks}>

@@ -1,8 +1,15 @@
 import { memo } from 'react'
 import { useMutation } from '@apollo/client/react'
 import { Button } from '@heroui/react'
-import { FollowUserDocument, UnfollowUserDocument } from '@/lib/graphql/generated/graphql'
+import {
+  FollowersDocument,
+  FollowingDocument,
+  FollowUserDocument,
+  UnfollowUserDocument,
+} from '@/lib/graphql/generated/graphql'
 import { useAuthStore } from '@/lib/stores/authStore'
+
+const FOLLOW_CONNECTION_PAGE_SIZE = 20
 
 type FollowButtonProps = {
   userId: string
@@ -26,9 +33,22 @@ export const FollowButton = memo(function FollowButton({
   const name = displayName ?? username
   const followers = followersCount ?? 0
   const following = followingCount ?? 0
+  const refetchConnectionQueries = user
+    ? [
+        {
+          query: FollowersDocument,
+          variables: { uuid: userId, first: FOLLOW_CONNECTION_PAGE_SIZE },
+        },
+        {
+          query: FollowingDocument,
+          variables: { uuid: user.id, first: FOLLOW_CONNECTION_PAGE_SIZE },
+        },
+      ]
+    : []
 
   const [followUser, { loading: followLoading }] = useMutation(FollowUserDocument, {
     variables: { userUuid: userId },
+    refetchQueries: refetchConnectionQueries,
     optimisticResponse: {
       followUser: {
         __typename: 'User',
@@ -44,6 +64,7 @@ export const FollowButton = memo(function FollowButton({
 
   const [unfollowUser, { loading: unfollowLoading }] = useMutation(UnfollowUserDocument, {
     variables: { userUuid: userId },
+    refetchQueries: refetchConnectionQueries,
     optimisticResponse: {
       unfollowUser: {
         __typename: 'User',
